@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Listing — GreenBooks</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2320a84a'/%3E%3Cpath d='M16 18h32v28H16z' fill='%23fff' opacity='0.12'/%3E%3Cpath d='M20 22h24v4H20zM20 30h24v4H20zM20 38h24v2H20z' fill='%23fff'/%3E%3C/svg%3E" />
+  <style>
+    :root{--bg:#fbfff9;--card:#fff;--muted:#6b7280;--green-700:#1f8a3e;--accent:linear-gradient(180deg,#20a84a,#1f8a3e);--radius:14px}
+    *{box-sizing:border-box}body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:linear-gradient(180deg,#f4fff8 0,#fbfff9 60%);color:#042c17;padding:28px}
+    .wrap{max-width:1100px;margin:0 auto;display:flex;gap:20px;align-items:flex-start}
+    @media(max-width:980px){.wrap{flex-direction:column;padding:12px}}
+    .hero{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-mark{width:56px;height:56px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+    .title{font-size:20px;font-weight:800;color:var(--green-700)}
+    .sub{color:var(--muted)}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 18px 50px rgba(6,24,12,.06);flex:1}
+    .left{width:420px;max-width:44%}
+    .right{flex:1;min-width:300px}
+    @media(max-width:980px){.left{width:100%;max-width:none} .wrap{flex-direction:column}}
+    .carousel{border-radius:10px;overflow:hidden;background:#f7fff7;border:1px dashed #e6f3ea;display:flex;align-items:center;justify-content:center;min-height:320px}
+    .carousel img{width:100%;height:100%;object-fit:contain;display:block}
+    .thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .thumb{width:84px;height:112px;border-radius:8px;overflow:hidden;border:2px solid transparent;cursor:pointer}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .thumb.active{border-color:var(--green-700)}
+    .meta{display:flex;flex-direction:column;gap:8px}
+    .price{font-weight:900;color:var(--green-700);font-size:22px}
+    .field{font-size:14px;color:#0b2a16}
+    .label{font-size:12px;color:var(--muted);margin-bottom:4px}
+    .tags{display:flex;gap:8px;flex-wrap:wrap}
+    .tag{background:#ecfdf3;color:var(--green-700);padding:6px 10px;border-radius:999px;font-weight:700;border:1px solid rgba(32,168,74,0.06)}
+    .seller{display:flex;gap:12px;align-items:center;margin-top:6px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:800}
+    .btn.primary{background:var(--accent);color:white}
+    .btn.ghost{background:transparent;border:1px solid rgba(12,23,10,.06);color:var(--green-700)}
+    .small{font-size:13px;color:var(--muted)}
+    .chat-launch{display:flex;gap:8px;margin-top:12px}
+    .empty{padding:30px;text-align:center;color:var(--muted)}
+    /* chat modal (copy of previous style) */
+    .modal-backdrop{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(2,8,4,0.32);display:flex;align-items:center;justify-content:center;z-index:1200}
+    .chat-modal{width:720px;max-width:95%;height:520px;background:var(--card);border-radius:12px;padding:12px;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(6,24,12,.28)}
+    .chat-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f6f0}
+    .chat-body{flex:1;padding:12px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+    .msg-row{display:flex;gap:8px;align-items:flex-end}
+    .msg{max-width:72%;padding:10px 12px;border-radius:12px;background:#f1fff3}
+    .msg.me{margin-left:auto;background:linear-gradient(180deg,#e6fff0,#e4f9e7)}
+    .msg small{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+    .chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid #f0f6f0}
+    .chat-input textarea{flex:1;min-height:44px;max-height:120px;padding:10px;border-radius:10px}
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="brand">
+      <div class="logo-mark">GB</div>
+      <div>
+        <div class="title">GreenBooks — Listing</div>
+        <div class="sub">Listing detail & in-app chat</div>
+      </div>
+    </div>
+    <div class="small" id="status">Loading…</div>
+  </div>
+
+  <div class="wrap">
+    <div class="left card" id="leftCard">
+      <div id="carouselRoot" class="carousel" aria-live="polite">Loading images…</div>
+      <div id="thumbs" class="thumbs" aria-hidden="false"></div>
+      <div style="display:flex;gap:12px;margin-top:12px;align-items:center;justify-content:space-between">
+        <div class="small" id="createdAt"></div>
+        <div>
+          <button id="backBtn" class="btn ghost">Back</button>
+          <button id="qrBtn" class="btn ghost">Show QR</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="right card" id="rightCard">
+      <div class="meta">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:800;font-size:20px" id="title">—</div>
+            <div class="small" id="subtitle"></div>
+          </div>
+          <div style="text-align:right">
+            <div class="price" id="price">$0.00</div>
+            <div class="small" id="condition">Condition</div>
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <div class="label">Tags</div>
+          <div id="tags" class="tags"></div>
+        </div>
+
+        <div style="margin-top:10px">
+          <div class="label">Description</div>
+          <div id="description" class="field">—</div>
+        </div>
+
+        <div style="margin-top:10px">
+          <div class="label">Edition / ISBN</div>
+          <div class="field" id="edition">—</div>
+        </div>
+
+        <div style="margin-top:10px">
+          <div class="label">Seller</div>
+          <div class="seller">
+            <div>
+              <div style="font-weight:700" id="ownerName">—</div>
+              <div class="small" id="ownerEmail">—</div>
+            </div>
+          </div>
+          <div class="chat-launch">
+            <button id="contactBtn" class="btn ghost">Contact Seller</button>
+            <button id="messageBtn" class="btn primary">Open Chat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- chat modal root -->
+  <div id="chatModalRoot" style="display:none"></div>
+
+  <!-- small QR modal -->
+  <div id="qrRoot" style="display:none"></div>
+
+  <!-- Firebase compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <script>
+  (function(){
+    // ---------- REPLACE with your Firebase project config ----------
+    const firebaseConfig = {
+      apiKey: "REPLACE_ME",
+      authDomain: "REPLACE_ME",
+      projectId: "REPLACE_ME",
+      storageBucket: "REPLACE_ME",
+      messagingSenderId: "REPLACE_ME",
+      appId: "REPLACE_ME"
+    };
+    if (!firebaseConfig || firebaseConfig.apiKey === "REPLACE_ME") console.warn('Replace firebaseConfig');
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+    const auth = firebase.auth ? firebase.auth() : null;
+
+    // DOM refs
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const statusEl = document.getElementById('status');
+    const titleEl = document.getElementById('title');
+    const subtitleEl = document.getElementById('subtitle');
+    const priceEl = document.getElementById('price');
+    const conditionEl = document.getElementById('condition');
+    const tagsEl = document.getElementById('tags');
+    const descEl = document.getElementById('description');
+    const editionEl = document.getElementById('edition');
+    const ownerNameEl = document.getElementById('ownerName');
+    const ownerEmailEl = document.getElementById('ownerEmail');
+    const createdAtEl = document.getElementById('createdAt');
+    const carouselRoot = document.getElementById('carouselRoot');
+    const thumbsEl = document.getElementById('thumbs');
+    const backBtn = document.getElementById('backBtn');
+    const contactBtn = document.getElementById('contactBtn');
+    const messageBtn = document.getElementById('messageBtn');
+    const chatRoot = document.getElementById('chatModalRoot');
+    const qrRoot = document.getElementById('qrRoot');
+    const qrBtn = document.getElementById('qrBtn');
+
+    if(!id){ statusEl.textContent = 'No listing id provided in URL (?id=...)'; document.getElementById('leftCard').style.display='none'; document.getElementById('rightCard').style.display='none'; }
+
+    // helpers
+    function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function toast(msg, opts={timeout:3000}){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), opts.timeout); }
+    function nowMs(){return Date.now();}
+
+    // fetch listing doc
+    async function loadListing() {
+      try {
+        statusEl.textContent = 'Loading listing…';
+        const docRef = db.collection('listings').doc(id);
+        const snap = await docRef.get();
+        if(!snap.exists){ statusEl.textContent = 'Listing not found'; carouselRoot.innerHTML = ''; return; }
+        const d = snap.data();
+        d.id = snap.id;
+        // normalize createdAt -> ms
+        if(d.createdAt && typeof d.createdAt.toMillis === 'function'){ try{ d.createdAt = d.createdAt.toMillis(); } catch(e){ d.createdAt = Date.now(); } }
+        else if(typeof d.createdAt !== 'number') d.createdAt = Date.now();
+        renderListing(d);
+        statusEl.textContent = 'Loaded';
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Error loading listing';
+      }
+    }
+
+    function renderListing(listing) {
+      titleEl.textContent = listing.title || listing.isbn || 'Untitled';
+      subtitleEl.textContent = listing.edition ? (listing.edition + ' • ' + (listing.isbn || '')) : (listing.isbn || '');
+      priceEl.textContent = '$' + (Number.isFinite(Number(listing.price)) ? Number(listing.price).toFixed(2) : '0.00');
+      conditionEl.textContent = listing.condition || '';
+      descEl.textContent = listing.description || '';
+      editionEl.textContent = (listing.edition ? listing.edition + ' • ' : '') + (listing.isbn || '');
+      ownerNameEl.textContent = listing.ownerName || 'Seller';
+      ownerEmailEl.textContent = listing.ownerEmail || '';
+      createdAtEl.textContent = listing.createdAt ? ('Posted: ' + new Date(listing.createdAt).toLocaleString()) : '';
+      // tags
+      tagsEl.innerHTML = '';
+      (listing.courseCodes || []).forEach(c => {
+        const s = document.createElement('div'); s.className='tag'; s.textContent = c; tagsEl.appendChild(s);
+      });
+
+      // images: prefer imageUrl canonical, else images array
+      let images = [];
+      if(listing.imageUrl) images.push(listing.imageUrl);
+      if(Array.isArray(listing.images)) images.push(...listing.images);
+      images = Array.from(new Set(images)); // unique
+      if(images.length === 0){
+        carouselRoot.innerHTML = '<div class="empty">No image available</div>';
+      } else {
+        buildCarousel(images);
+      }
+
+      // Chat buttons behavior
+      contactBtn.onclick = () => openChatModalForListing(listing);
+      messageBtn.onclick = () => openChatModalForListing(listing);
+      qrBtn.onclick = () => showQrForListing(listing);
+
+      // back button
+      backBtn.onclick = () => { window.history.back(); };
+    }
+
+    // carousel UI
+    function buildCarousel(images){
+      carouselRoot.innerHTML = '';
+      thumbsEl.innerHTML = '';
+      let current = 0;
+
+      const mainImg = document.createElement('img');
+      mainImg.src = images[0];
+      carouselRoot.appendChild(mainImg);
+
+      function setActive(i){
+        current = i;
+        mainImg.src = images[i];
+        // update thumbs active
+        Array.from(thumbsEl.children).forEach((t, idx)=> t.classList.toggle('active', idx===i));
+      }
+
+      images.forEach((src, i) => {
+        const t = document.createElement('div'); t.className='thumb' + (i===0 ? ' active' : '');
+        const img = document.createElement('img'); img.src = src; img.alt = 'thumb';
+        t.appendChild(img);
+        t.addEventListener('click', (ev)=>{ ev.stopPropagation(); setActive(i); });
+        thumbsEl.appendChild(t);
+      });
+    }
+
+    // QR generator (small inline canvas -> dataURL)
+    function showQrForListing(listing){
+      qrRoot.innerHTML = ''; qrRoot.style.display = 'block';
+      const modal = document.createElement('div'); modal.className='modal-backdrop';
+      const box = document.createElement('div'); box.style.background='var(--card)'; box.style.padding='16px'; box.style.borderRadius='12px'; box.style.maxWidth='420px';
+      box.innerHTML = `<div style="font-weight:800;margin-bottom:8px">Listing QR</div><div style="margin-bottom:12px">Scan to open this listing</div>`;
+      const canvas = document.createElement('canvas'); canvas.width = 260; canvas.height = 260;
+      box.appendChild(canvas);
+      box.innerHTML += `<div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button id="closeQr" class="btn ghost">Close</button></div>`;
+      modal.appendChild(box); qrRoot.appendChild(modal);
+
+      // draw a simple QR-like block (not perfect but demo-friendly)
+      const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle = '#1f8a3e';
+      const url = window.location.href;
+      // simple hash->pattern
+      let h=0; for(let i=0;i<url.length;i++) h = (h*31 + url.charCodeAt(i))|0;
+      for(let y=0;y<26;y++){ for(let x=0;x<26;x++){
+        const k = Math.abs((h + x*37 + y*131) % 2);
+        if(k) ctx.fillRect(6 + x*9, 6 + y*9, 8, 8);
+      }}
+      modal.querySelector('#closeQr').addEventListener('click', ()=>{ qrRoot.innerHTML=''; qrRoot.style.display='none'; });
+    }
+
+    // ---------- Chat modal (reuse messaging behavior) ----------
+    function openChatModalForListing(listing) {
+      chatRoot.innerHTML = ''; chatRoot.style.display = 'block';
+      const modal = document.createElement('div'); modal.className='modal-backdrop';
+      const chatHtml = document.createElement('div'); chatHtml.className='chat-modal';
+
+      // header
+      const header = document.createElement('div'); header.className='chat-header';
+      header.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><strong>Chat about</strong><div style="font-weight:700">${esc(listing.title||listing.isbn||'Listing')}</div></div>
+                          <div><button id="closeChat" class="btn ghost">Close</button></div>`;
+      chatHtml.appendChild(header);
+
+      // body and footer
+      const body = document.createElement('div'); body.className='chat-body';
+      const footer = document.createElement('div'); footer.className='chat-input';
+      footer.innerHTML = `<textarea id="chatInput" placeholder="Write a message…"></textarea><button id="sendMsg" class="btn primary">Send</button>`;
+
+      chatHtml.appendChild(body); chatHtml.appendChild(footer);
+      modal.appendChild(chatHtml); chatRoot.appendChild(modal);
+
+      modal.querySelector('#closeChat').addEventListener('click', ()=> { cleanup(); });
+
+      // listen to messages for this listing
+      const msgsQuery = db.collection('messages').where('listingId','==', listing.id).orderBy('createdAt','asc');
+      let unsubMsgs = null;
+
+      function convertMsg(d){ if(d.createdAt && typeof d.createdAt.toMillis === 'function'){ try{ d.createdAt = d.createdAt.toMillis(); }catch(e){ d.createdAt = Date.now(); } } else if(typeof d.createdAt !== 'number'){ d.createdAt = Date.now(); } return d; }
+
+      unsubMsgs = msgsQuery.onSnapshot(snap=>{
+        body.innerHTML = '';
+        snap.forEach(doc=>{
+          const m = doc.data(); m.id = doc.id; convertMsg(m); renderMessageRow(m, listing, body);
+        });
+        body.scrollTop = body.scrollHeight;
+      }, err=>{ console.error('msgs snapshot err',err); });
+
+      // send path
+      const sendBtn = modal.querySelector('#sendMsg'); const chatInput = modal.querySelector('#chatInput');
+      sendBtn.addEventListener('click', async ()=>{
+        const text = (chatInput.value||'').trim(); if(!text) return;
+        // identity: prefer firebase auth, else local anon
+        let sender = null;
+        try{ if(auth && auth.currentUser) sender = { uid: auth.currentUser.uid, name: auth.currentUser.displayName || auth.currentUser.email || 'ASU User', email: auth.currentUser.email || '' }; }catch(e){}
+        if(!sender){
+          // try local storage
+          let local = localStorage.getItem('gb_user');
+          if(!local){
+            // prompt quick identity
+            const name = prompt('Enter display name for chat (shown to others):') || ('anon'+Math.random().toString(36).slice(2,8));
+            local = JSON.stringify({ uid: 'anon-'+Math.random().toString(36).slice(2,9), name: name, email: '' });
+            localStorage.setItem('gb_user', local);
+          }
+          const obj = JSON.parse(local);
+          sender = { uid: obj.uid, name: obj.name, email: obj.email || '' };
+        }
+        const msgDoc = {
+          listingId: listing.id,
+          fromUid: sender.uid,
+          toUid: listing.ownerUid || 'anon',
+          fromName: sender.name || sender.email || 'Anonymous',
+          toName: listing.ownerName || listing.ownerEmail || 'Seller',
+          text: text,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        try{ await db.collection('messages').add(msgDoc); chatInput.value=''; } catch(e){ console.error('send err',e); toast('Could not send message'); }
+      });
+
+      chatInput.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter' && !ev.shiftKey){ ev.preventDefault(); sendBtn.click(); } });
+
+      function cleanup(){ if(unsubMsgs) unsubMsgs(); chatRoot.innerHTML=''; chatRoot.style.display='none'; }
+    }
+
+    function renderMessageRow(m, listing, container){
+      const currentUid = (auth && auth.currentUser && auth.currentUser.uid) || (() => { try{ const l=localStorage.getItem('gb_user'); if(l) return JSON.parse(l).uid; } catch(e){} return null; })();
+      const isMe = currentUid && m.fromUid === currentUid;
+      const row = document.createElement('div'); row.className='msg-row';
+      const bubble = document.createElement('div'); bubble.className='msg' + (isMe ? ' me' : '');
+      bubble.textContent = m.text;
+      const meta = document.createElement('small'); meta.textContent = (m.fromName || m.fromUid) + ' • ' + new Date(m.createdAt||Date.now()).toLocaleString();
+      bubble.appendChild(meta);
+      if(isMe){ row.style.justifyContent='flex-end'; row.appendChild(bubble); } else { row.appendChild(bubble); }
+      container.appendChild(row);
+    }
+
+    // initial load
+    loadListing();
+
+    // helpful console note
+    console.log('listing.html loaded. Fetching id=%s', id);
+    // Note: this page reads one listing; Firestore composite index is only required for queries in the feed page (status ASC, createdAt DESC).
+    // For production add security rules to enforce ownerUid correctness and messages write permissions.
+
+  })();
+  </script>
+</body>
+</html>
