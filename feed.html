@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Campus Marketplace — Feed</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--muted:#6b7280;--bg:#f3f4f6;--card:#fff;--accent:#4f46e5}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;padding:24px;background:var(--bg);color:#111}
+    .container{max-width:980px;margin:0 auto}
+    h1{font-size:20px;margin-bottom:12px}
+    .filters{display:flex;flex-wrap:wrap;gap:10px;background:var(--card);padding:12px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+    .filters label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+    .input,select{padding:8px;border-radius:6px;border:1px solid #e5e7eb;min-width:120px}
+    .small{width:100px}
+    .search{flex:1;min-width:180px}
+    .clear-btn{padding:8px 12px;border-radius:6px;background:#eee;border:0;cursor:pointer}
+    .grid{margin-top:18px;display:grid;gap:12px}
+    .card{display:flex;gap:12px;padding:12px;background:var(--card);border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;align-items:stretch}
+    .thumb{width:90px;height:120px;border-radius:6px;background:#eee;object-fit:cover}
+    .meta{flex:1;display:flex;flex-direction:column}
+    .title{font-weight:600;margin-bottom:4px}
+    .edition{font-size:13px;color:var(--muted)}
+    .tags{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+    .tag{background:#eef2ff;color:#3730a3;padding:4px 8px;border-radius:999px;font-size:12px}
+    .price{font-weight:700;font-size:18px}
+    .row{display:flex;justify-content:space-between;align-items:center}
+    .seller{font-size:13px;color:var(--muted)}
+    .actions{display:flex;gap:8px}
+    .btn{padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;background:white;cursor:pointer}
+    .btn.primary{background:var(--accent);color:white;border:0}
+    .skeleton{height:140px;border-radius:10px;background:linear-gradient(90deg,#f3f4f6,#eceff1,#f3f4f6);animation:pulse 1.2s infinite}
+    @keyframes pulse{0%{background-position:-200px 0}100%{background-position:200px 0}}
+    .empty{padding:40px;text-align:center;color:var(--muted);background:transparent}
+    a.disabled{opacity:.5;pointer-events:none}
+    @media (max-width:640px){ .filters{flex-direction:column} .card{flex-direction:row} .thumb{width:80px;height:110px} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Campus Marketplace — Feed</h1>
+
+    <div class="filters" id="filters">
+      <div>
+        <label for="course">Course</label>
+        <select id="course" class="input">
+          <option value="">ANY</option>
+          <option>CSE110</option>
+          <option>CSE205</option>
+          <option>MAT265</option>
+          <option>PHY111</option>
+          <option>ENG101</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="minPrice">Min $</label>
+        <input id="minPrice" class="input small" type="number" min="0" placeholder="0" />
+      </div>
+
+      <div>
+        <label for="maxPrice">Max $</label>
+        <input id="maxPrice" class="input small" type="number" min="0" placeholder="Any" />
+      </div>
+
+      <div style="flex:1;min-width:180px">
+        <label for="search">Search</label>
+        <input id="search" class="input search" type="text" placeholder='e.g. INTRO TO PROG or 9781234567897' />
+      </div>
+
+      <div style="display:flex;flex-direction:column;justify-content:flex-end">
+        <button id="clear" class="clear-btn">Clear</button>
+      </div>
+    </div>
+
+    <div id="status" style="margin-top:14px;color:var(--muted)">Loading listings…</div>
+
+    <div id="grid" class="grid" style="margin-top:8px">
+      <!-- cards will be injected here -->
+    </div>
+  </div>
+
+  <!-- Firebase (compat) - simple for plain JS pages -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <script>
+    /********************************************************************
+     *  Replace firebaseConfig below with your project's config values  *
+     *  You can find these in your Firebase console -> SDK setup         *
+     ********************************************************************/
+    const firebaseConfig = {
+      apiKey: "REPLACE_ME",
+      authDomain: "REPLACE_ME",
+      projectId: "REPLACE_ME",
+      storageBucket: "REPLACE_ME",
+      messagingSenderId: "REPLACE_ME",
+      appId: "REPLACE_ME"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Elements
+    const gridEl = document.getElementById('grid');
+    const statusEl = document.getElementById('status');
+    const courseEl = document.getElementById('course');
+    const minPriceEl = document.getElementById('minPrice');
+    const maxPriceEl = document.getElementById('maxPrice');
+    const searchEl = document.getElementById('search');
+    const clearBtn = document.getElementById('clear');
+
+    // In-memory caches
+    let allListings = [];           // raw listing objects
+    let usersMap = {};              // ownerUid -> { displayName, asuEmail }
+    let filteredListings = [];      // result of current filter
+    let loading = true;
+
+    // Utility: create DOM for a listing card
+    function createCard(listing) {
+      const id = listing.id;
+      const title = listing.title || listing.isbn || 'Untitled';
+      const image = (listing.images && listing.images[0]) || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="90" height="120"><rect width="100%" height="100%" fill="%23e6e7ea"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23888" font-size="12">No Image</text></svg>';
+      const seller = usersMap[listing.ownerUid] || {};
+      const sellerName = seller.displayName || seller.asuEmail || 'Seller';
+      const ownerEmail = listing.ownerEmail || seller.asuEmail || '';
+
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.onclick = () => { window.location.href = `listing.html?id=${encodeURIComponent(id)}`; };
+
+      el.innerHTML = `
+        <img class="thumb" src="${escapeHtml(image)}" alt="${escapeHtml(title)}" />
+        <div class="meta">
+          <div class="row">
+            <div>
+              <div class="title">${escapeHtml(title)}</div>
+              <div class="edition">${escapeHtml(listing.edition || '')}</div>
+              <div class="tags">
+                ${ (listing.courseCodes || []).map(c => `<span class="tag">${escapeHtml(c)}</span>`).join('') }
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div class="price">$${Number(listing.price||0).toFixed(2)}</div>
+              <div class="edition" style="margin-top:6px">${escapeHtml(listing.condition || '')}</div>
+            </div>
+          </div>
+
+          <div style="margin-top:auto" class="row">
+            <div class="seller">Seller: <strong>${escapeHtml(sellerName)}</strong></div>
+            <div class="actions">
+              <a class="btn" href="${ownerEmail ? buildMailTo(ownerEmail,title, sellerName, listing.id) : '#'}" onclick="event.stopPropagation()"
+                 ${ ownerEmail ? '' : 'class="disabled"' }>
+                Contact Seller
+              </a>
+              <button class="btn primary" onclick="event.stopPropagation();window.location.href='listing.html?id=${encodeURIComponent(id)}'">View</button>
+            </div>
+          </div>
+        </div>
+      `;
+      return el;
+    }
+
+    // Escaping utility to avoid naive XSS
+    function escapeHtml(str){
+      return String(str||'').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function buildMailTo(email, title, sellerName, listingId){
+      const subject = encodeURIComponent(`Interested in ${title}`);
+      const body = encodeURIComponent(`Hi ${sellerName},\n\nI saw your listing for "${title}". Is it still available?\nListing ID: ${listingId}\n\nThanks.`);
+      return `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
+    }
+
+    // Render functions
+    function renderSkeletons() {
+      gridEl.innerHTML = '';
+      for(let i=0;i<6;i++){
+        const s = document.createElement('div');
+        s.className = 'skeleton';
+        gridEl.appendChild(s);
+      }
+    }
+
+    function renderEmpty() {
+      gridEl.innerHTML = `<div class="empty">
+        <div style="font-size:36px">📚</div>
+        <div style="margin-top:8px;font-weight:600">No listings found</div>
+        <div style="margin-top:6px;color:var(--muted)">Try clearing filters or adjusting your search.</div>
+      </div>`;
+    }
+
+    function renderGrid(listings) {
+      gridEl.innerHTML = '';
+      listings.forEach(l => gridEl.appendChild(createCard(l)));
+    }
+
+    // Client-side filter function (fast for 30–100 items)
+    function applyFilters() {
+      if (!allListings) return;
+      const course = courseEl.value || null;
+      const minP = minPriceEl.value ? Number(minPriceEl.value) : null;
+      const maxP = maxPriceEl.value ? Number(maxPriceEl.value) : null;
+      const searchRaw = (searchEl.value || '').trim();
+      const s = searchRaw ? searchRaw.toUpperCase() : '';
+
+      const t0 = performance.now();
+      filteredListings = allListings.filter(l => {
+        if (course && (!l.courseCodes || !l.courseCodes.includes(course))) return false;
+        if (minP !== null && l.price < minP) return false;
+        if (maxP !== null && l.price > maxP) return false;
+        if (s) {
+          // exact token on searchKeys
+          if (Array.isArray(l.searchKeys) && l.searchKeys.includes(s)) return true;
+          // fallback: title or isbn contains
+          if ((l.title||'').toUpperCase().includes(s)) return true;
+          if ((String(l.isbn||'')).toUpperCase().includes(s)) return true;
+          return false;
+        }
+        return true;
+      });
+      const t1 = performance.now();
+      // console.log('filter time ms', Math.round((t1-t0)*100)/100);
+      if (filteredListings.length === 0) renderEmpty();
+      else renderGrid(filteredListings);
+      statusEl.textContent = `${filteredListings.length} listing${filteredListings.length === 1 ? '' : 's'}`;
+    }
+
+    // Debounce for typing in search (small)
+    let searchTimer = null;
+    function debounceApply() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(applyFilters, 120);
+    }
+
+    // Fetch listings and users
+    async function fetchData() {
+      loading = true;
+      renderSkeletons();
+      statusEl.textContent = 'Loading listings…';
+
+      try {
+        // Query: where status == 'active' order by createdAt desc
+        const q = db.collection('listings')
+                    .where('status', '==', 'active')
+                    .orderBy('createdAt', 'desc')
+                    .limit(100);
+        const snap = await q.get();
+
+        allListings = snap.docs.map(d => {
+          const data = d.data();
+          // Ensure price numeric
+          data.price = Number(data.price || 0);
+          data.id = d.id;
+          // searchKeys might be stored as array in Firestore; normalize to uppercase tokens
+          if (Array.isArray(data.searchKeys)) {
+            data.searchKeys = data.searchKeys.map(t => String(t||'').toUpperCase());
+          }
+          return data;
+        });
+
+        // Fetch users for ownerUids
+        const uids = Array.from(new Set(allListings.map(l => l.ownerUid).filter(Boolean)));
+        usersMap = {};
+        if (uids.length) {
+          // Firestore 'in' supports up to 10; chunk
+          for (let i = 0; i < uids.length; i += 10) {
+            const chunk = uids.slice(i, i+10);
+            const usersSnap = await db.collection('users').where('uid','in',chunk).get();
+            usersSnap.forEach(u => {
+              const d = u.data();
+              usersMap[d.uid] = {
+                displayName: d.displayName,
+                asuEmail: d.asuEmail
+              };
+            });
+          }
+        }
+
+        // Done: render
+        if (allListings.length === 0) {
+          renderEmpty();
+          statusEl.textContent = '0 listings';
+        } else {
+          applyFilters();
+        }
+      } catch(err) {
+        console.error(err);
+        gridEl.innerHTML = `<div class="empty">Error loading listings. Check console.</div>`;
+        statusEl.textContent = 'Error';
+      } finally {
+        loading = false;
+      }
+    }
+
+    // Wire filter inputs
+    courseEl.addEventListener('change', applyFilters);
+    minPriceEl.addEventListener('input', debounceApply);
+    maxPriceEl.addEventListener('input', debounceApply);
+    searchEl.addEventListener('input', debounceApply);
+    clearBtn.addEventListener('click', () => {
+      courseEl.value = '';
+      minPriceEl.value = '';
+      maxPriceEl.value = '';
+      searchEl.value = '';
+      applyFilters();
+    });
+
+    // Initial load
+    fetchData();
+  </script>
+</body>
+</html>
