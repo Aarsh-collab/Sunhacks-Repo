@@ -2,179 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>GreenBooks — Campus Marketplace (Parallax UI)</title>
+  <title>GreenBooks — Marketplace with In-App Chat</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Favicon: same as before (green book) -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2320a84a'/%3E%3Cpath d='M16 18h32v28H16z' fill='%23fff' opacity='0.12'/%3E%3Cpath d='M20 22h24v4H20zM20 30h24v4H20zM20 38h24v2H20z' fill='%23fff'/%3E%3C/svg%3E" />
-
   <style>
-    :root{
-      --bg-light:#f7fff7;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --green-900:#0f4f26;
-      --green-700:#1f8a3e;
-      --green-500:#20a84a;
-      --glass: rgba(255,255,255,0.6);
-      --shadow-lg: 0 18px 50px rgba(6, 24, 12, 0.12);
-      --radius: 16px;
-      --gap: 20px;
-      --max-width:1240px;
-      --accent: linear-gradient(180deg,var(--green-500),var(--green-700));
-    }
-
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-      background: linear-gradient(180deg, #f4fff8 0%, #fbfff9 60%);
-      color: #042c17; line-height:1.45; padding:28px;
-      overflow-y:scroll;
-    }
-
-    /* Parallax background layers */
-    .parallax-wrap{
-      position:fixed;left:0;right:0;top:0;bottom:0;z-index:-2;pointer-events:none;overflow:hidden;
-    }
-    .parallax-layer{
-      position:absolute;left:50%;top:0;transform:translateX(-50%);
-      width:1400px;height:600px;border-radius:20px;opacity:0.22;filter:blur(28px);
-      mix-blend-mode:multiply;
-    }
-    .layer-1{background:radial-gradient(circle at 20% 30%, rgba(32,168,74,0.14), transparent 20%), radial-gradient(circle at 80% 70%, rgba(11,86,42,0.08), transparent 20%);transform:translateX(-50%) translateY(-10%);}
-    .layer-2{background:linear-gradient(90deg, rgba(32,168,74,0.08), rgba(15,79,38,0.06));filter:blur(40px);opacity:0.14;transform:translateX(-50%) translateY(-30%);}
-    .layer-3{background:radial-gradient(circle at 50% 40%, rgba(32,168,74,0.06), transparent 30%);opacity:0.12;filter:blur(60px);transform:translateX(-50%) translateY(-55%);}
-
-    /* App container */
-    .container {
-      max-width:var(--max-width); margin:0 auto; position:relative; z-index:1;
-      display:grid; grid-template-columns:380px 1fr; gap:var(--gap); align-items:start;
-    }
-    @media (max-width:1000px){ .container{grid-template-columns:1fr; padding:8px} }
-
-    /* Sticky header (logo + subtle nav area) */
-    .header {
-      position:sticky; top:18px; display:flex;align-items:center;justify-content:space-between;gap:12px; z-index:40; margin-bottom:14px;
-    }
-    .brand {
-      display:flex;align-items:center;gap:12px;
-      background:linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
-      padding:10px 14px;border-radius:14px;backdrop-filter: blur(6px);
-      box-shadow:0 8px 30px rgba(10,30,10,0.05);
-    }
-    .logo-mark {
-      width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px;
-      background:var(--accent); box-shadow: 0 10px 30px rgba(32,168,74,0.12); transform:translateZ(0);
-    }
-    .brand .title{font-weight:800;color:var(--green-900);font-size:18px}
-    .brand .sub{font-size:13px;color:var(--muted)}
-
-    /* main layout */
-    .sidebar {
-      background:var(--card); border-radius:var(--radius);
-      padding:22px; box-shadow:var(--shadow-lg); display:flex;flex-direction:column; gap:14px;
-      min-height:520px;
-    }
-    .main {
-      display:flex;flex-direction:column;gap:14px;
-    }
-
+    :root{--bg:#fbfff9;--card:#fff;--muted:#6b7280;--green-700:#1f8a3e;--accent:linear-gradient(180deg,#20a84a,#1f8a3e);--radius:14px}
+    *{box-sizing:border-box}body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:linear-gradient(180deg,#f4fff8 0,#fbfff9 60%);color:#042c17;padding:28px}
+    .parallax-wrap{position:fixed;left:0;right:0;top:0;bottom:0;z-index:-2;pointer-events:none;overflow:hidden}
+    .parallax-layer{position:absolute;left:50%;top:0;transform:translateX(-50%);width:1400px;height:600px;border-radius:20px;opacity:.22;filter:blur(28px)}
+    /* containers */
+    .container{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+    @media(max-width:980px){.container{grid-template-columns:1fr;padding:12px}}
+    .sidebar{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:0 18px 50px rgba(6,24,12,.08);min-height:520px}
+    .main{display:flex;flex-direction:column;gap:12px}
+    /* header */
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo-mark{width:56px;height:56px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
     /* form */
-    label{font-size:13px;color:var(--muted);margin-bottom:6px}
-    .input, input[type="text"], input[type="number"], textarea, select {
-      width:100%; padding:12px 14px; border-radius:12px; border:1px solid #eaf7ed; background:#fbfffb; font-size:14px; outline:none;
-      transition: box-shadow .16s, border-color .16s, transform .12s;
-    }
-    .input:focus, input:focus, textarea:focus, select:focus { box-shadow:0 10px 30px rgba(32,168,74,0.08); border-color:var(--green-500); transform: translateY(-1px); }
-    textarea{min-height:100px; resize:vertical}
-
-    .controls { display:flex; gap:10px; align-items:center; }
-    .btn {
-      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; border:0; cursor:pointer; font-weight:700;
-      transition: transform .12s ease, box-shadow .12s ease, opacity .12s;
-    }
-    .btn.primary { background:var(--accent); color:white; box-shadow: 0 14px 40px rgba(32,168,74,0.12); }
-    .btn.ghost { background:transparent; border:1px solid rgba(12,23,10,0.06); color:var(--green-700); padding:9px 12px; }
-    .btn:active { transform:translateY(2px); }
-
-    .preview { height:130px; border-radius:12px; display:flex; align-items:center; justify-content:center; background: linear-gradient(180deg,#f7fff7,#fbfff9); border:1px dashed #e6f3ea; overflow:hidden; }
-    .preview img{width:100%;height:100%;object-fit:cover}
-
-    /* search + filters */
-    .searchbar {
-      display:flex; gap:12px; align-items:center; justify-content:space-between; padding:14px; border-radius:12px; background:var(--card); box-shadow:var(--shadow-lg);
-      position:sticky; top:18px; z-index:30;
-    }
-    .search {
-      display:flex; gap:12px; align-items:center; flex:1;
-    }
-    .search input { padding:12px 14px; border-radius:12px; border:1px solid #eefcf0; background:#fbfff9; flex:1; font-size:14px; }
-
-    .meta-pill { padding:8px 10px; background:#ecfdf3; color:var(--green-700); border-radius:999px; font-weight:700; }
-
-    /* feed grid & cards */
-    .feed {
-      display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px;
-    }
-    .card {
-      display:flex; gap:12px; padding:14px; border-radius:14px; background: linear-gradient(180deg,#ffffff,#f9fff7);
-      transition: transform .18s cubic-bezier(.15,.9,.35,1), box-shadow .18s; box-shadow:0 10px 30px rgba(10,30,10,0.04); cursor:pointer; min-height:160px; overflow:hidden;
-      transform-origin:center;
-    }
-    .card:hover { transform: translateY(-10px) rotateX(0.6deg); box-shadow: 0 30px 60px rgba(9,20,10,0.12); }
-    .card .thumb { width:120px; height:160px; border-radius:10px; object-fit:cover; background:#f1fbf1; flex-shrink:0; }
-    .card-meta { display:flex; flex-direction:column; gap:8px; min-width:0; }
-    .card-title { font-weight:800; color:#07330f; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
-    .card-desc { color:#235b32; font-size:13px; max-height:56px; overflow:hidden; }
-    .card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
-    .price { font-weight:900; color:var(--green-700); font-size:18px; }
-    .tag { display:inline-block; background:#ecfdf3; color:var(--green-700); padding:6px 10px; border-radius:999px; font-weight:800; border:1px solid rgba(32,168,74,0.06); font-size:12px; }
-    .card-bottom { display:flex; justify-content:space-between; margin-top:auto; align-items:center; }
-    .seller { color:var(--muted); font-size:13px; }
-
-    /* skeleton */
-    .skeleton { height:170px; border-radius:14px; background:linear-gradient(90deg,#f4fff8,#effff6,#f4fff8); animation: shimmer 1.2s linear infinite; }
-    @keyframes shimmer{ 0%{ background-position:-200px 0} 100% { background-position:200px 0 } }
-
-    /* toast */
-    .toast { position:fixed; right:22px; bottom:22px; z-index:1000; background:var(--green-700); color:white; padding:12px 16px; border-radius:12px; box-shadow:0 12px 36px rgba(12,30,12,0.18); font-weight:700; }
-
-    a.disabled { opacity:0.5; pointer-events:none; }
-
-    /* decorative subtle footer spacing */
-    .spacer { height:40px }
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+    input,textarea,select{width:100%;padding:12px;border-radius:12px;border:1px solid #eaf7ed;background:#fbfffb;font-size:14px;outline:none}
+    textarea{min-height:100px;resize:vertical}
+    .controls{display:flex;gap:10px;margin-top:8px}
+    .btn{padding:10px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:700}
+    .btn.primary{background:var(--accent);color:white}
+    .btn.ghost{background:transparent;border:1px solid rgba(12,23,10,.06);color:var(--green-700)}
+    .preview{height:120px;border-radius:12px;border:1px dashed #e6f3ea;background:linear-gradient(180deg,#f7fff7,#fbfff9);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    /* search */
+    .searchbar{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:var(--card);box-shadow:0 18px 50px rgba(6,24,12,.06)}
+    .searchbar input{padding:12px;border-radius:10px;border:1px solid #eefcf0;background:#fbfff9;flex:1}
+    .meta-pill{padding:8px 10px;border-radius:999px;background:#ecfdf3;color:var(--green-700);font-weight:800}
+    /* feed */
+    .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;margin-top:12px}
+    .card{display:flex;gap:12px;padding:14px;border-radius:12px;background:linear-gradient(180deg,#fff,#f9fff7);box-shadow:0 10px 30px rgba(10,30,10,.04);cursor:pointer;min-height:160px}
+    .thumb{width:120px;height:160px;border-radius:10px;object-fit:cover;background:#f1fbf1;flex-shrink:0}
+    .card-meta{display:flex;flex-direction:column;gap:8px;min-width:0}
+    .price{font-weight:900;color:var(--green-700)}
+    .tag{display:inline-block;background:#ecfdf3;color:var(--green-700);padding:6px 10px;border-radius:999px;font-weight:800}
+    .seller{font-size:13px;color:var(--muted)}
+    .skeleton{height:170px;border-radius:12px;background:linear-gradient(90deg,#f4fff8,#effff6,#f4fff8);animation:shimmer 1.2s linear infinite}
+    @keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
+    .toast{position:fixed;right:22px;bottom:22px;background:var(--green-700);color:white;padding:12px 16px;border-radius:10px;box-shadow:0 10px 30px rgba(12,30,12,.18)}
+    .empty{padding:40px;text-align:center;color:var(--muted);background:transparent}
+    /* chat modal */
+    .modal-backdrop{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(2,8,4,0.32);display:flex;align-items:center;justify-content:center;z-index:1200}
+    .chat-modal{width:720px;max-width:95%;height:520px;background:var(--card);border-radius:12px;padding:12px;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(6,24,12,.28)}
+    .chat-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f6f0}
+    .chat-body{flex:1;padding:12px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+    .msg-row{display:flex;gap:8px;align-items:flex-end}
+    .msg{max-width:72%;padding:10px 12px;border-radius:12px;background:#f1fff3}
+    .msg.me{margin-left:auto;background:linear-gradient(180deg,#e6fff0,#e4f9e7)}
+    .msg small{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+    .chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid #f0f6f0}
+    .chat-input textarea{flex:1;min-height:44px;max-height:120px;padding:10px;border-radius:10px}
+    .identity-prompt{display:flex;flex-direction:column;gap:8px;padding:12px}
   </style>
 </head>
 <body>
-  <!-- Parallax decorative layers -->
   <div class="parallax-wrap" aria-hidden="true">
-    <div class="parallax-layer layer-1" id="layer1"></div>
-    <div class="parallax-layer layer-2" id="layer2"></div>
-    <div class="parallax-layer layer-3" id="layer3"></div>
+    <div class="parallax-layer" style="left:40%" id="layer1"></div>
+    <div class="parallax-layer" style="left:60%" id="layer2"></div>
+    <div class="parallax-layer" style="left:50%" id="layer3"></div>
   </div>
 
-  <!-- App header + brand -->
-  <div class="header">
-    <div class="brand" role="banner" aria-label="GreenBooks header">
-      <div class="logo-mark" id="logoMark" aria-hidden="true">GB</div>
+  <header class="header">
+    <div class="brand">
+      <div class="logo-mark">GB</div>
       <div>
-        <div class="title">GreenBooks</div>
-        <div class="sub">Campus marketplace — find used textbooks & meet safely</div>
+        <div style="font-weight:800;color:var(--green-700)">GreenBooks</div>
+        <div style="font-size:13px;color:var(--muted)">Campus marketplace — safe meetups</div>
       </div>
     </div>
-    <div style="display:flex;gap:12px;align-items:center">
-      <div style="text-align:right;color:var(--muted);font-size:13px">Live • <span id="liveCount">—</span></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="color:var(--muted);font-size:13px">Live • <span id="liveCount">—</span></div>
+      <button id="whoamiBtn" class="btn ghost">Identify</button>
     </div>
-  </div>
+  </header>
 
-  <div class="container" role="main">
-    <!-- Sidebar: Create Listing -->
-    <aside class="sidebar" aria-label="Create listing">
+  <div class="container">
+    <aside class="sidebar">
       <form id="createForm" autocomplete="off" novalidate>
-        <div style="display:flex;gap:12px;align-items:center;">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:6px">
           <div class="logo-mark" style="width:46px;height:46px;font-size:16px">GB</div>
           <div>
             <div style="font-weight:800;color:var(--green-700)">Post a listing</div>
@@ -182,15 +91,11 @@
           </div>
         </div>
 
-        <div>
-          <label for="title">Title</label>
-          <input id="title" type="text" placeholder="e.g. Introduction to Programming (Z)" required />
-        </div>
+        <label for="title">Title</label>
+        <input id="title" type="text" placeholder="e.g. Intro to Programming (Z)" required />
 
-        <div>
-          <label for="description">Description</label>
-          <textarea id="description" placeholder="Add edition/notes/condition"></textarea>
-        </div>
+        <label for="description">Description</label>
+        <textarea id="description" placeholder="Add edition/notes/condition"></textarea>
 
         <div style="display:flex;gap:10px">
           <div style="flex:1">
@@ -199,43 +104,30 @@
           </div>
           <div style="width:150px">
             <label for="condition">Condition</label>
-            <select id="condition">
-              <option>Like New</option><option>Good</option><option>Fair</option>
-            </select>
+            <select id="condition"><option>Like New</option><option>Good</option><option>Fair</option></select>
           </div>
         </div>
 
-        <div>
-          <label for="courseCodes">Course codes</label>
-          <input id="courseCodes" type="text" placeholder="CSE110, MAT265" />
-          <div style="font-size:12px;color:var(--muted);margin-top:6px">Comma-separated tags used for search & filters.</div>
-        </div>
-
-        <div style="display:flex;gap:10px">
+        <label for="courseCodes">Course codes</label>
+        <input id="courseCodes" placeholder="CSE110, MAT265" />
+        <div style="display:flex;gap:10px;margin-top:8px">
           <div style="flex:1">
             <label for="edition">Edition</label>
-            <input id="edition" type="text" placeholder="e.g. 3rd" />
+            <input id="edition" placeholder="e.g. 3rd" />
           </div>
           <div style="width:160px">
             <label for="isbn">ISBN</label>
-            <input id="isbn" type="text" placeholder="978..." />
+            <input id="isbn" placeholder="978..." />
           </div>
         </div>
 
-        <div>
-          <label for="ownerName">Seller name</label>
-          <input id="ownerName" type="text" placeholder="Your name" />
-        </div>
-        <div>
-          <label for="ownerEmail">Seller email</label>
-          <input id="ownerEmail" type="text" placeholder="you@asu.edu" />
-        </div>
-
-        <div>
-          <label for="imageFile">Image (optional)</label>
-          <input id="imageFile" type="file" accept="image/*" />
-          <div id="preview" class="preview" aria-live="polite">No image selected</div>
-        </div>
+        <label for="ownerName">Seller name</label>
+        <input id="ownerName" placeholder="Your name" />
+        <label for="ownerEmail">Seller email</label>
+        <input id="ownerEmail" placeholder="you@asu.edu" />
+        <label for="imageFile">Image (optional)</label>
+        <input id="imageFile" type="file" accept="image/*" />
+        <div id="preview" class="preview">No image selected</div>
 
         <div class="controls">
           <button id="postBtn" class="btn primary" type="button">Post Listing</button>
@@ -243,31 +135,22 @@
           <button id="clearBtn" class="btn ghost" type="button">Clear</button>
         </div>
 
-        <div id="formStatus" style="font-size:13px;color:var(--muted);margin-top:10px">Note: Demo mode — add Firebase Auth for secure posting.</div>
+        <div id="formStatus" style="font-size:13px;color:var(--muted);margin-top:8px">Demo mode — no enforced auth yet.</div>
       </form>
     </aside>
 
-    <!-- Main feed area -->
     <main class="main">
-      <div class="searchbar" role="search" aria-label="Search and filters">
-        <div class="search" style="gap:12px">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="opacity:.8"><path d="M21 21l-4.35-4.35" stroke="#1f8a3e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="#1f8a3e" stroke-width="1.6"/></svg>
-          <input id="globalSearch" placeholder="Search token / title / ISBN (token exact-match supported)" />
-        </div>
-
-        <div style="display:flex;gap:10px;align-items:center">
-          <div class="meta-pill" id="countPill">—</div>
-        </div>
+      <div class="searchbar">
+        <input id="globalSearch" placeholder="Search token / title / ISBN" />
+        <div class="meta-pill" id="countPill">—</div>
       </div>
 
       <div style="display:flex;gap:12px;align-items:center">
-        <select id="filterCourse" style="min-width:160px;padding:10px;border-radius:12px;border:1px solid #eefcf0;background:#fbfff9">
-          <option value="">All courses</option>
-          <option>CSE110</option><option>CSE205</option><option>MAT265</option><option>PHY111</option><option>ENG101</option>
+        <select id="filterCourse" style="min-width:160px;padding:10px;border-radius:10px">
+          <option value="">All courses</option><option>CSE110</option><option>CSE205</option><option>MAT265</option><option>PHY111</option><option>ENG101</option>
         </select>
-
-        <input id="filterMin" type="number" placeholder="Min $" style="width:120px;padding:10px;border-radius:12px;border:1px solid #eefcf0;background:#fbfff9" />
-        <input id="filterMax" type="number" placeholder="Max $" style="width:120px;padding:10px;border-radius:12px;border:1px solid #eefcf0;background:#fbfff9" />
+        <input id="filterMin" type="number" placeholder="Min $" style="width:120px" />
+        <input id="filterMax" type="number" placeholder="Max $" style="width:120px" />
         <button id="clearFilters" class="btn ghost">Clear filters</button>
         <div style="flex:1"></div>
         <button id="refreshBtn" class="btn ghost">Refresh</button>
@@ -275,22 +158,25 @@
 
       <div id="status" style="font-size:13px;color:var(--muted);margin-top:8px">Connecting…</div>
 
-      <section id="feed" class="feed" aria-live="polite" style="margin-top:12px"></section>
-      <div class="spacer" aria-hidden="true"></div>
+      <section id="feed" class="feed" aria-live="polite"></section>
     </main>
   </div>
 
-  <!-- Toast container -->
-  <div id="toastContainer" aria-live="polite" style="position:fixed;right:22px;bottom:22px;z-index:1010"></div>
+  <!-- Chat modal (hidden by default) -->
+  <div id="chatModalRoot" style="display:none"></div>
 
-  <!-- Firebase compat -->
+  <!-- toast container -->
+  <div id="toastContainer" aria-live="polite" style="position:fixed;right:22px;bottom:22px;z-index:1400"></div>
+
+  <!-- Firebase compat libs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
   <script>
   (function(){
-    // -------------------- REPLACE WITH YOUR FIREBASE CONFIG --------------------
+    // ---------------- CONFIG ----------------
     const firebaseConfig = {
       apiKey: "REPLACE_ME",
       authDomain: "REPLACE_ME",
@@ -299,19 +185,23 @@
       messagingSenderId: "REPLACE_ME",
       appId: "REPLACE_ME"
     };
-    // -------------------------------------------------------------------------
+    if (!firebaseConfig || firebaseConfig.apiKey === "REPLACE_ME") console.warn('Replace firebaseConfig');
 
-    if (!firebaseConfig || firebaseConfig.apiKey === "REPLACE_ME") {
-      console.warn("Please replace firebaseConfig with your project's config.");
-    }
-
-    // Init Firebase (compat)
+    // Init
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const storage = firebase.storage();
+    const auth = firebase.auth ? firebase.auth() : null;
 
     // DOM refs
-    const createForm = document.getElementById('createForm');
+    const feed = document.getElementById('feed');
+    const liveCount = document.getElementById('liveCount');
+    const countPill = document.getElementById('countPill');
+    const statusEl = document.getElementById('status');
+    const toastContainer = document.getElementById('toastContainer');
+    const chatRoot = document.getElementById('chatModalRoot');
+
+    // Form refs
     const titleEl = document.getElementById('title');
     const descEl = document.getElementById('description');
     const priceEl = document.getElementById('price');
@@ -334,11 +224,7 @@
     const filterMax = document.getElementById('filterMax');
     const clearFilters = document.getElementById('clearFilters');
     const refreshBtn = document.getElementById('refreshBtn');
-    const feed = document.getElementById('feed');
-    const statusEl = document.getElementById('status');
-    const countPill = document.getElementById('countPill');
-    const toastContainer = document.getElementById('toastContainer');
-    const liveCount = document.getElementById('liveCount');
+    const whoamiBtn = document.getElementById('whoamiBtn');
 
     // in-memory
     let allListings = [];
@@ -346,243 +232,251 @@
     let unsubSnapshot = null;
 
     // helpers
-    function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-    function toast(msg, opts={type:'ok',timeout:3500}) {
-      const el = document.createElement('div');
-      el.className = 'toast';
-      el.style.background = opts.type === 'err' ? '#b84b4b' : 'var(--green-700)';
-      el.textContent = msg;
-      toastContainer.appendChild(el);
-      setTimeout(()=>{ el.style.opacity=0; el.style.transform='translateY(6px)'; setTimeout(()=>el.remove(),420); }, opts.timeout);
+    function esc(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+    function toast(msg, opts={type:'ok',timeout:3200}) {
+      const el=document.createElement('div');el.className='toast';el.textContent=msg;el.style.background=opts.type==='err' ? '#b84b4b' : 'var(--green-700)';toastContainer.appendChild(el);
+      setTimeout(()=>{el.style.opacity=0;el.style.transform='translateY(6px)';setTimeout(()=>el.remove(),420)},opts.timeout);
     }
-    function mailToLink(email,title,sellerName,id) {
-      const subj = encodeURIComponent(`Interested in ${title}`);
-      const body = encodeURIComponent(`Hi ${sellerName},\n\nI saw your listing for "${title}". Is it still available?\nListing ID: ${id}\n\nThanks.`);
-      return `mailto:${encodeURIComponent(email)}?subject=${subj}&body=${body}`;
+    function nowMs(){return Date.now();}
+
+    // identity helpers: use firebase auth if signed in; else local anon user in localStorage
+    function getLocalIdentity(){
+      const raw = localStorage.getItem('gb_user');
+      if(!raw) return null;
+      try { return JSON.parse(raw); } catch(e){ return null; }
+    }
+    function setLocalIdentity(obj){ localStorage.setItem('gb_user', JSON.stringify(obj)); }
+    function ensureLocalIdentity(interactive=true){
+      // try firebase auth
+      try {
+        const u = auth && auth.currentUser;
+        if(u){ return { uid: u.uid, name: u.displayName || u.email || 'ASU User', email: u.email || '' }; }
+      } catch(e){ /*ignore*/ }
+      // else local
+      let id = getLocalIdentity();
+      if(id) return id;
+      if(!interactive) return null;
+      // prompt a small form modal to collect name & email
+      return promptForIdentity();
     }
 
+    function promptForIdentity(){
+      return new Promise((resolve) => {
+        const modal = document.createElement('div'); modal.className='modal-backdrop';
+        modal.innerHTML = `
+          <div class="chat-modal" style="width:420px;max-width:94%">
+            <div class="chat-header"><strong>Identify yourself</strong></div>
+            <div class="identity-prompt" style="padding:12px">
+              <label>Your display name</label><input id="promptName" />
+              <label>Your email (optional)</label><input id="promptEmail" />
+              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+                <button id="cancelId" class="btn ghost">Cancel</button>
+                <button id="saveId" class="btn primary">Save</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        const inpName = modal.querySelector('#promptName');
+        const inpEmail = modal.querySelector('#promptEmail');
+        modal.querySelector('#saveId').addEventListener('click', () => {
+          const name = (inpName.value||'').trim() || ('anon'+Math.random().toString(36).slice(2,8));
+          const email = (inpEmail.value||'').trim();
+          const uid = 'anon-' + (Math.random().toString(36).slice(2,9));
+          const ident = { uid, name, email };
+          setLocalIdentity(ident);
+          modal.remove();
+          resolve(ident);
+        });
+        modal.querySelector('#cancelId').addEventListener('click', () => { modal.remove(); resolve(null); });
+      });
+    }
+
+    whoamiBtn.addEventListener('click', async () => {
+      const ident = await ensureLocalIdentity(true);
+      if(ident) toast('Identified as ' + ident.name);
+    });
+
     // Build normalized searchKeys
-    function buildSearchKeys(obj) {
-      const keys = [];
-      if (obj.title) keys.push(...String(obj.title).split(/\s+/).map(t => t.replace(/[^\w]/g, '').toUpperCase()).filter(Boolean));
-      if (obj.courseCodes) {
-        const codes = Array.isArray(obj.courseCodes) ? obj.courseCodes : String(obj.courseCodes).split(',');
-        codes.map(c => String(c).trim().toUpperCase()).filter(Boolean).forEach(c => keys.push(c));
-      }
-      if (obj.isbn) keys.push(String(obj.isbn).toUpperCase());
+    function buildSearchKeys(obj){
+      const keys=[];
+      if(obj.title) keys.push(...String(obj.title).split(/\s+/).map(t=>t.replace(/[^\w]/g,'').toUpperCase()).filter(Boolean));
+      if(obj.courseCodes){ const codes = Array.isArray(obj.courseCodes)?obj.courseCodes:String(obj.courseCodes).split(','); codes.map(c=>String(c).trim().toUpperCase()).filter(Boolean).forEach(c=>keys.push(c)); }
+      if(obj.isbn) keys.push(String(obj.isbn).toUpperCase());
       return Array.from(new Set(keys));
     }
 
-    // upload image to storage
-    async function uploadImage(file) {
-      if (!file) return null;
-      const path = 'images/' + Date.now() + '_' + file.name.replace(/\s+/g,'_');
+    // upload image with owner path and 5MB guard
+    async function uploadImageWithPath(file, ownerUid){
+      if(!file) return null;
+      if(file.size > 5*1024*1024){ toast('Max 5MB image',{type:'err'}); return null; }
+      const safeOwner = ownerUid || 'anon';
+      const path = `listingImages/${safeOwner}/${Date.now()}_${file.name.replace(/\s+/g,'_')}`;
       const ref = storage.ref().child(path);
       const snap = await ref.put(file);
       const url = await snap.ref.getDownloadURL();
       return url;
     }
 
-    // create card UI (keeps functionality intact)
-    function createCard(item) {
+    // create card - Contact button opens chat modal
+    function createCard(item){
       const image = item.imageUrl || (item.images && item.images[0]) || '';
       const id = item.id;
       const title = item.title || item.isbn || 'Untitled';
       const sellerName = item.ownerName || item.ownerEmail || 'Seller';
       const ownerEmail = item.ownerEmail || '';
+      const ownerUid = item.ownerUid || 'anon';
 
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.tabIndex = 0;
+      const card = document.createElement('div'); card.className='card';
+      const img = document.createElement('img'); img.className='thumb'; img.loading='lazy'; img.alt=title;
+      img.src = image || 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="220" height="280"><rect width="100%" height="100%" fill="%23f1fbf1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%239bbd9c" font-size="16">No Image</text></svg>');
+      const meta = document.createElement('div'); meta.className='card-meta';
+      const top = document.createElement('div'); top.className='card-top';
+      const titleEl = document.createElement('div'); titleEl.className='card-title'; titleEl.textContent = title;
+      const price = document.createElement('div'); price.className='price'; price.textContent = '$' + (Number.isFinite(Number(item.price))?Number(item.price).toFixed(2):'0.00');
+      top.appendChild(titleEl); top.appendChild(price);
 
-      const img = document.createElement('img');
-      img.className = 'thumb';
-      img.loading = 'lazy';
-      img.alt = title;
-      img.src = image || 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="220" height="280"><rect width="100%" height="100%" fill="%23f1faf1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%239bbd9c" font-size="16">No Image</text></svg>');
+      const tag = document.createElement('div'); tag.className='tag'; tag.textContent = (item.courseCodes && item.courseCodes[0])||'General';
+      const desc = document.createElement('div'); desc.className='card-desc'; desc.textContent = item.description||'';
+      const bottom = document.createElement('div'); bottom.className='card-bottom';
+      const seller = document.createElement('div'); seller.className='seller'; seller.innerHTML = 'Seller: <strong>'+esc(sellerName)+'</strong>';
 
-      const meta = document.createElement('div');
-      meta.className = 'card-meta';
+      const actions = document.createElement('div'); actions.className='actions';
+      const contactBtn = document.createElement('button'); contactBtn.className='btn ghost'; contactBtn.textContent='Contact';
+      contactBtn.addEventListener('click', (ev)=>{ ev.stopPropagation(); openChatModal({listing: item}); });
+      const viewBtn = document.createElement('button'); viewBtn.className='btn primary'; viewBtn.textContent='View';
+      viewBtn.addEventListener('click', ev=>{ ev.stopPropagation(); openListingDetail(item.id); });
 
-      const top = document.createElement('div'); top.className = 'card-top';
-      const titleEl = document.createElement('div'); titleEl.className = 'card-title'; titleEl.textContent = title;
-      const rightTop = document.createElement('div');
-      const pNum = Number(item.price); const safePrice = Number.isFinite(pNum) ? pNum : 0;
-      const priceEl = document.createElement('div'); priceEl.className = 'price'; priceEl.textContent = '$' + safePrice.toFixed(2);
-      rightTop.appendChild(priceEl);
-      top.appendChild(titleEl); top.appendChild(rightTop);
-
-      const tag = document.createElement('div'); tag.className = 'tag';
-      tag.textContent = (item.courseCodes && item.courseCodes[0]) || 'General';
-
-      const desc = document.createElement('div'); desc.className = 'card-desc'; desc.textContent = item.description || '';
-
-      const bottom = document.createElement('div'); bottom.className = 'card-bottom';
-      const seller = document.createElement('div'); seller.className = 'seller'; seller.innerHTML = 'Seller: <strong>' + esc(sellerName) + '</strong>';
-
-      const actions = document.createElement('div'); actions.className = 'actions';
-      const contact = document.createElement('a'); const contactClasses = ['btn']; if (!ownerEmail) contactClasses.push('disabled'); contact.className = contactClasses.join(' '); contact.textContent = 'Contact Seller';
-      if (ownerEmail) { contact.href = mailToLink(ownerEmail, title, sellerName, id); contact.setAttribute('rel','noopener noreferrer'); } else { contact.href = '#'; }
-      contact.addEventListener('click', e => e.stopPropagation());
-      const view = document.createElement('button'); view.className = 'btn primary'; view.textContent = 'View'; view.addEventListener('click', e=>{ e.stopPropagation(); window.location.href = 'listing.html?id=' + encodeURIComponent(id); });
-
-      actions.appendChild(contact); actions.appendChild(view);
+      actions.appendChild(contactBtn); actions.appendChild(viewBtn);
       bottom.appendChild(seller); bottom.appendChild(actions);
-
       meta.appendChild(top); meta.appendChild(tag); meta.appendChild(desc); meta.appendChild(bottom);
       card.appendChild(img); card.appendChild(meta);
 
-      card.addEventListener('click', ()=> window.location.href = 'listing.html?id=' + encodeURIComponent(id));
-
-      // subtle tilt on mouse move for 3D feel
-      card.addEventListener('mousemove', function (ev) {
-        const r = card.getBoundingClientRect();
-        const dx = ev.clientX - (r.left + r.width / 2);
-        const dy = ev.clientY - (r.top + r.height / 2);
-        const rx = (-dy / r.height) * 6;
-        const ry = (dx / r.width) * 8;
-        card.style.transform = `perspective(900px) translateY(-8px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-      });
-      card.addEventListener('mouseleave', function () { card.style.transform = 'translateY(-0px)'; });
-
+      // click card -> detail (existing placeholder)
+      card.addEventListener('click', ()=> openListingDetail(item.id));
       return card;
     }
 
-    function renderSkeletons() {
-      feed.innerHTML = '';
-      for (let i=0;i<6;i++){ const s = document.createElement('div'); s.className='skeleton'; feed.appendChild(s); }
-    }
-    function renderEmpty(){ feed.innerHTML=''; const e = document.createElement('div'); e.className='empty'; e.innerHTML='<div style="font-size:34px">📚</div><div style="margin-top:8px;font-weight:700">No listings</div><div class="muted">Try clearing filters or add a listing.</div>'; feed.appendChild(e); }
+    function openListingDetail(id){ window.location.href = 'listing.html?id=' + encodeURIComponent(id); }
+
+    function renderSkeletons(){ feed.innerHTML=''; for(let i=0;i<6;i++){const s=document.createElement('div');s.className='skeleton';feed.appendChild(s);} }
+    function renderEmpty(){ feed.innerHTML=''; const e=document.createElement('div'); e.className='empty'; e.innerHTML='<div style="font-size:34px">📚</div><div style="margin-top:8px;font-weight:700">No listings</div><div style="color:var(--muted)">Try clearing filters or add a listing.</div>'; feed.appendChild(e); }
     function renderGrid(list){ feed.innerHTML=''; list.forEach(it=>feed.appendChild(createCard(it))); }
 
-    // apply filters same as before (fast client-side)
-    function applyFilters() {
-      if (!allListings) return;
-      const course = (filterCourse.value || '').trim();
-      const minP = filterMin.value ? Number(filterMin.value) : null;
-      const maxP = filterMax.value ? Number(filterMax.value) : null;
-      const s = (globalSearch.value || '').trim().toUpperCase();
-
-      const t0 = performance.now();
-      filtered = allListings.filter(l => {
-        if (course && (!l.courseCodes || !l.courseCodes.includes(course))) return false;
-        const pnum = Number(l.price); const price = Number.isFinite(pnum) ? pnum : 0;
-        if (minP !== null && price < minP) return false;
-        if (maxP !== null && price > maxP) return false;
-        if (s) {
-          if (Array.isArray(l.searchKeys) && l.searchKeys.includes(s)) return true;
-          if ((l.title||'').toUpperCase().includes(s)) return true;
-          if (String(l.isbn||'').toUpperCase().includes(s)) return true;
+    // Filters
+    function applyFilters(){
+      if(!allListings) return;
+      const course=(filterCourse.value||'').trim();
+      const minP=filterMin.value?Number(filterMin.value):null;
+      const maxP=filterMax.value?Number(filterMax.value):null;
+      const s=(globalSearch.value||'').trim().toUpperCase();
+      const t0=performance.now();
+      filtered = allListings.filter(l=>{
+        if(course && (!l.courseCodes || !l.courseCodes.includes(course))) return false;
+        const p = Number(l.price); const price = Number.isFinite(p)?p:0;
+        if(minP!==null && price < minP) return false;
+        if(maxP!==null && price > maxP) return false;
+        if(s){
+          if(Array.isArray(l.searchKeys) && l.searchKeys.includes(s)) return true;
+          if((l.title||'').toUpperCase().includes(s)) return true;
+          if(String(l.isbn||'').toUpperCase().includes(s)) return true;
           return false;
         }
         return true;
       });
-      const t1 = performance.now();
-      if (filtered.length === 0) renderEmpty(); else renderGrid(filtered);
-      countPill.textContent = filtered.length + ' listing' + (filtered.length === 1 ? '' : 's');
-      statusEl.textContent = `Updated • ${Math.round(t1-t0)} ms`;
+      const t1=performance.now();
+      if(filtered.length===0) renderEmpty(); else renderGrid(filtered);
+      countPill.textContent = filtered.length + ' listing' + (filtered.length===1?'':'s');
+      statusEl.textContent = 'Updated • ' + Math.round(t1-t0) + ' ms';
       liveCount.textContent = allListings.length;
     }
 
-    // real-time feed with onSnapshot; note: composite index required for where(status).orderBy(createdAt)
-    function startRealtimeFeed() {
-      if (unsubSnapshot) unsubSnapshot();
+    // Convert createdAt to ms in snapshot
+    function startRealtimeFeed(){
+      if(unsubSnapshot) unsubSnapshot();
       statusEl.textContent = 'Connecting…';
       renderSkeletons();
-      try {
+      try{
         const q = db.collection('listings').where('status','==','active').orderBy('createdAt','desc').limit(300);
-        unsubSnapshot = q.onSnapshot(snap => {
-          const arr = [];
-          snap.forEach(doc => {
+        unsubSnapshot = q.onSnapshot(snap=>{
+          const arr=[];
+          snap.forEach(doc=>{
             const d = doc.data(); d.id = doc.id;
-            const p = Number(d.price); d.price = Number.isFinite(p) ? p : 0;
-            if (Array.isArray(d.searchKeys)) d.searchKeys = d.searchKeys.map(t => String(t||'').toUpperCase());
-            if (d.courseCodes && typeof d.courseCodes === 'string') d.courseCodes = d.courseCodes.split(',').map(x=>x.trim()).filter(Boolean);
+            if(d.createdAt && typeof d.createdAt.toMillis === 'function'){ try{ d.createdAt = d.createdAt.toMillis(); } catch(e){ d.createdAt = Date.now(); } }
+            else if(typeof d.createdAt !== 'number'){ d.createdAt = Date.now(); }
+            const p = Number(d.price); d.price = Number.isFinite(p)?p:0;
+            if(Array.isArray(d.searchKeys)) d.searchKeys = d.searchKeys.map(t=>String(t||'').toUpperCase());
+            if(d.courseCodes && typeof d.courseCodes === 'string') d.courseCodes = d.courseCodes.split(',').map(x=>x.trim()).filter(Boolean);
             arr.push(d);
           });
           allListings = arr;
-          if (!allListings.length) { renderEmpty(); countPill.textContent='0 listings'; statusEl.textContent='No listings'; liveCount.textContent='0'; }
+          if(!allListings.length){ renderEmpty(); countPill.textContent='0 listings'; statusEl.textContent='No listings'; liveCount.textContent='0'; }
           else { applyFilters(); statusEl.textContent = 'Live • ' + allListings.length + ' listings'; }
-        }, err => {
-          console.error('snapshot err',err);
-          statusEl.textContent = 'Live feed error (see console)';
-        });
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = 'Could not start live feed';
-      }
+        }, err=>{ console.error('snapshot err',err); statusEl.textContent = 'Live feed error (see console)';});
+      }catch(err){ console.error(err); statusEl.textContent = 'Could not start live feed'; }
     }
 
-    // clear the form completely (owner requested)
-    function clearForm() {
-      createForm.reset();
-      previewEl.innerHTML = 'No image selected';
-      previewEl.classList.add('muted');
-    }
+    // Clear form
+    function clearForm(){ document.getElementById('createForm').reset(); previewEl.innerHTML='No image selected'; previewEl.classList.add('muted'); }
 
-    // preview image
-    imageFileEl.addEventListener('change', e => {
+    imageFileEl.addEventListener('change', e=>{
       const f = imageFileEl.files && imageFileEl.files[0];
-      if (!f) { previewEl.innerHTML = 'No image selected'; previewEl.classList.add('muted'); return; }
-      const url = URL.createObjectURL(f);
-      previewEl.innerHTML = '';
-      previewEl.classList.remove('muted');
-      const img = document.createElement('img'); img.src = url; img.alt='Preview'; previewEl.appendChild(img);
+      if(!f){ previewEl.innerHTML='No image selected'; previewEl.classList.add('muted'); return; }
+      const url = URL.createObjectURL(f); previewEl.innerHTML=''; previewEl.classList.remove('muted'); const img=document.createElement('img'); img.src=url; previewEl.appendChild(img);
     });
 
-    // post listing (functionality unchanged)
-    postBtn.addEventListener('click', async () => {
-      const title = (titleEl.value || '').trim();
-      if (!title) { toast('Title required', {type:'err'}); return; }
-      postBtn.disabled = true; seedBtn.disabled = true; formStatus.textContent = 'Posting listing…';
+    // Post listing (ownerUid, canonical imageUrl, stable path, 5MB guard)
+    postBtn.addEventListener('click', async ()=>{
+      const title = (titleEl.value||'').trim(); if(!title){ toast('Title required',{type:'err'}); return; }
+      postBtn.disabled=true; seedBtn.disabled=true; formStatus.textContent='Posting listing…';
 
-      try {
+      try{
+        // determine ownerUid
+        let ownerUid = 'anon';
+        try{ if(auth && auth.currentUser && auth.currentUser.uid) ownerUid = auth.currentUser.uid; }catch(e){}
         const file = imageFileEl.files && imageFileEl.files[0];
         let imageUrl = null;
-        if (file) { formStatus.textContent = 'Uploading image…'; imageUrl = await uploadImage(file); }
+        if(file){
+          if(file.size > 5*1024*1024){ toast('Max 5MB image',{type:'err'}); postBtn.disabled=false; seedBtn.disabled=false; return; }
+          formStatus.textContent='Uploading image…';
+          imageUrl = await uploadImageWithPath(file, ownerUid);
+        }
 
-        const courseCodes = (courseEl.value || '').split(',').map(x=>x.trim()).filter(Boolean);
+        const courseCodes = (courseEl.value||'').split(',').map(x=>x.trim()).filter(Boolean);
         const rawPrice = priceEl.value ? Number(priceEl.value) : 0; const priceVal = Number.isFinite(Number(rawPrice)) ? Number(rawPrice) : 0;
 
         const listing = {
+          ownerUid,
           title,
-          description: (descEl.value || '').trim(),
+          description: (descEl.value||'').trim(),
           price: priceVal,
           courseCodes,
-          edition: (editionEl.value || '').trim(),
+          edition: (editionEl.value||'').trim(),
           condition: conditionEl.value,
-          isbn: (isbnEl.value || '').trim(),
-          ownerName: (ownerNameEl.value || '').trim() || (ownerEmailEl.value || '').trim() || 'Seller',
-          ownerEmail: (ownerEmailEl.value || '').trim(),
-          images: imageUrl ? [imageUrl] : [],
+          isbn: (isbnEl.value||'').trim(),
+          ownerName: (ownerNameEl.value||'').trim() || (ownerEmailEl.value||'').trim() || 'Seller',
+          ownerEmail: (ownerEmailEl.value||'').trim(),
           imageUrl: imageUrl || null,
+          images: imageUrl ? [imageUrl] : [],
           status: 'active',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         listing.searchKeys = buildSearchKeys(listing);
-
         await db.collection('listings').add(listing);
         toast('Listing posted — appears in feed shortly');
-        formStatus.textContent = 'Posted!';
-        // CLEAR sidebar completely now
         clearForm();
-      } catch (err) {
-        console.error(err);
-        toast('Error posting listing', {type:'err'});
-        formStatus.textContent = 'Error posting listing';
-      } finally {
-        postBtn.disabled = false; seedBtn.disabled = false;
-        setTimeout(()=>formStatus.textContent = 'Note: Demo mode — add Firebase Auth for security', 2200);
-      }
+      }catch(err){ console.error(err); toast('Error posting listing',{type:'err'}); formStatus.textContent='Error posting listing'; }
+      finally{ postBtn.disabled=false; seedBtn.disabled=false; setTimeout(()=>formStatus.textContent='Demo mode — add Firebase Auth for security',2200); }
     });
 
-    // seed demo
-    seedBtn.addEventListener('click', async () => {
-      seedBtn.disabled = true; formStatus.textContent = 'Seeding demo...';
-      try {
+    // Seed demo
+    seedBtn.addEventListener('click', async ()=>{
+      seedBtn.disabled=true; formStatus.textContent='Seeding demo...';
+      try{
         const demo = {
+          ownerUid: 'anon',
           title: 'Intro to Programming — Demo Copy',
-          description: 'A clean demo copy used for testing the GreenBooks feed.',
+          description: 'Demo copy for testing chat & feed.',
           price: Math.floor(Math.random()*24)+6,
           courseCodes: ['CSE110'],
           edition: '2nd',
@@ -590,57 +484,170 @@
           isbn: '9781234567890',
           ownerName: 'Demo Seller',
           ownerEmail: 'demo@asu.edu',
-          images: [], imageUrl: null,
+          imageUrl: null, images: [],
           status: 'active',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         demo.searchKeys = buildSearchKeys(demo);
         await db.collection('listings').add(demo);
         toast('Demo seeded');
-      } catch(err) { console.error(err); toast('Error seeding', {type:'err'}); }
-      finally { seedBtn.disabled = false; setTimeout(()=>formStatus.textContent='Note: Demo mode — add Firebase Auth for security',1600); }
+      }catch(e){ console.error(e); toast('Error seeding',{type:'err'}); }
+      finally{ seedBtn.disabled=false; setTimeout(()=>formStatus.textContent='Demo mode — add Firebase Auth for security',1500); }
     });
 
-    // clear button
     clearBtn.addEventListener('click', ()=>{ clearForm(); toast('Form cleared'); });
 
-    // filters wiring (debounced)
-    let ftimer = null; function debounceFilters(){ if(ftimer) clearTimeout(ftimer); ftimer = setTimeout(applyFilters,120); }
+    // Filters wiring
+    let ftimer=null; function debounceFilters(){ if(ftimer) clearTimeout(ftimer); ftimer=setTimeout(applyFilters,120); }
     filterCourse.addEventListener('change', applyFilters);
     filterMin.addEventListener('input', debounceFilters);
     filterMax.addEventListener('input', debounceFilters);
     globalSearch.addEventListener('input', debounceFilters);
     clearFilters.addEventListener('click', ()=>{ filterCourse.value=''; filterMin.value=''; filterMax.value=''; globalSearch.value=''; applyFilters(); toast('Filters cleared'); });
 
-    refreshBtn.addEventListener('click', ()=>{ if (unsubSnapshot) unsubSnapshot(); startRealtimeFeed(); toast('Feed refreshed'); });
+    refreshBtn.addEventListener('click', ()=>{ if(unsubSnapshot) unsubSnapshot(); startRealtimeFeed(); toast('Feed refreshed'); });
 
-    // start live feed
+    // START
     startRealtimeFeed();
 
-    // cleanup
-    window.addEventListener('beforeunload', ()=>{ if (unsubSnapshot) unsubSnapshot(); });
+    // ------------------- CHAT IMPLEMENTATION -------------------
+    // Open chat modal for a given listing (object)
+    function openChatModal({listing}){
+      // create modal root
+      chatRoot.innerHTML = '';
+      chatRoot.style.display = 'block';
+      const modal = document.createElement('div'); modal.className='modal-backdrop';
+      const chatHtml = document.createElement('div'); chatHtml.className='chat-modal';
 
-    // ----------------- Parallax micro-interactions -----------------
-    // Move background layers subtly on scroll and mouse
-    const l1 = document.getElementById('layer1'), l2 = document.getElementById('layer2'), l3 = document.getElementById('layer3'), logo = document.getElementById('logoMark');
-    let mouse = {x:0,y:0};
-    window.addEventListener('mousemove', (ev)=>{ mouse.x = ev.clientX; mouse.y = ev.clientY; });
-    function parallaxLoop(){
-      const t = window.scrollY || window.pageYOffset;
-      const w = window.innerWidth, h = window.innerHeight;
-      const mx = (mouse.x - w/2)/w;
-      const my = (mouse.y - h/2)/h;
-      l1.style.transform = `translateX(${ -50 + mx*6 }%) translateY(${ -10 + t*0.03 }%)`;
-      l2.style.transform = `translateX(${ -50 + mx*12 }%) translateY(${ -30 + t*0.06 }%)`;
-      l3.style.transform = `translateX(${ -50 + mx*18 }%) translateY(${ -55 + t*0.09 }%)`;
-      // logo parallax subtle
-      logo.style.transform = `translate3d(${mx*6}px, ${my*6}px, 0) rotate(${mx*2}deg)`;
-      requestAnimationFrame(parallaxLoop);
+      // header
+      const header = document.createElement('div'); header.className='chat-header';
+      header.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><strong>Chat about</strong><div style="font-weight:700">${esc(listing.title||listing.isbn||'Listing')}</div></div>
+                          <div><button id="closeChat" class="btn ghost">Close</button></div>`;
+      chatHtml.appendChild(header);
+
+      // body (messages)
+      const body = document.createElement('div'); body.className='chat-body';
+      chatHtml.appendChild(body);
+
+      // footer (input)
+      const footer = document.createElement('div'); footer.className='chat-input';
+      footer.innerHTML = `<textarea id="chatInput" placeholder="Write a message…"></textarea><button id="sendMsg" class="btn primary">Send</button>`;
+      chatHtml.appendChild(footer);
+
+      modal.appendChild(chatHtml);
+      chatRoot.appendChild(modal);
+
+      // close handler
+      modal.querySelector('#closeChat').addEventListener('click', ()=>{ cleanup(); });
+
+      // set up identity & message send
+      let localIdent = ensureLocalIdentity(false);
+      if(!localIdent && (!auth || !auth.currentUser)){
+        // ask interactively
+        ensureLocalIdentity(true).then(id=>{
+          localIdent = id || getLocalIdentity();
+        });
+      }
+
+      // message listener: subscribe to messages for this listing
+      const msgsQuery = db.collection('messages').where('listingId','==', listing.id).orderBy('createdAt','asc');
+      let unsubMsgs = null;
+
+      function convertMsg(d){ if(d.createdAt && typeof d.createdAt.toMillis === 'function') { try{ d.createdAt = d.createdAt.toMillis(); } catch(e){ d.createdAt = Date.now(); } } else if(typeof d.createdAt !== 'number'){ d.createdAt = Date.now(); } return d; }
+
+      unsubMsgs = msgsQuery.onSnapshot(snap=>{
+        body.innerHTML = '';
+        snap.forEach(doc=>{
+          const m = doc.data(); m.id = doc.id;
+          convertMsg(m);
+          renderMessageRow(m, listing, body);
+        });
+        body.scrollTop = body.scrollHeight;
+      }, err=>{
+        console.error('msgs snapshot err',err);
+      });
+
+      // send message
+      const sendBtn = modal.querySelector('#sendMsg');
+      const chatInput = modal.querySelector('#chatInput');
+      sendBtn.addEventListener('click', async ()=>{
+        const text = (chatInput.value||'').trim();
+        if(!text) return;
+        // ensure identity
+        let sender = null;
+        try{ if(auth && auth.currentUser){ sender = { uid: auth.currentUser.uid, name: auth.currentUser.displayName || auth.currentUser.email || 'ASU User', email: auth.currentUser.email || '' }; } }catch(e){}
+        if(!sender){
+          sender = getLocalIdentity();
+          if(!sender){
+            // prompt for identity synchronously
+            const id = await ensureLocalIdentity(true);
+            if(!id){ toast('You need a name to send messages',{type:'err'}); return; }
+            sender = id;
+          }
+        }
+
+        const msgDoc = {
+          listingId: listing.id,
+          fromUid: sender.uid || ('anon-'+Math.random().toString(36).slice(2,9)),
+          toUid: listing.ownerUid || 'anon',
+          fromName: sender.name || sender.email || 'Anonymous',
+          toName: listing.ownerName || listing.ownerEmail || 'Seller',
+          text: text,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        try{
+          await db.collection('messages').add(msgDoc);
+          chatInput.value = '';
+        }catch(e){ console.error('send err',e); toast('Could not send message',{type:'err'}); }
+      });
+
+      // allow Enter to send (Shift+Enter for newline)
+      chatInput.addEventListener('keydown', (ev)=>{
+        if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); modal.querySelector('#sendMsg').click(); }
+      });
+
+      // cleanup function
+      function cleanup(){
+        if(unsubMsgs) unsubMsgs(); chatRoot.innerHTML = ''; chatRoot.style.display='none';
+      }
     }
-    requestAnimationFrame(parallaxLoop);
 
-    // NOTE: Firestore composite index required: where('status','==','active').orderBy('createdAt','desc')
-    // If Firestore returns an error about an index, open the console—the error includes a 1-click link to create the index.
+    // Renders a single message into the chat body
+    function renderMessageRow(m, listing, container){
+      const currentUid = (auth && auth.currentUser && auth.currentUser.uid) || (getLocalIdentity() && getLocalIdentity().uid) || null;
+      const isMe = currentUid && m.fromUid === currentUid;
+      const row = document.createElement('div'); row.className='msg-row';
+      const bubble = document.createElement('div'); bubble.className='msg'+(isMe?' me':'');
+      bubble.textContent = m.text;
+      const meta = document.createElement('small'); meta.textContent = (m.fromName || m.fromUid) + ' • ' + new Date(m.createdAt||Date.now()).toLocaleString();
+      bubble.appendChild(meta);
+      if(isMe){
+        row.style.justifyContent = 'flex-end';
+        row.appendChild(bubble);
+      } else {
+        row.appendChild(bubble);
+      }
+      container.appendChild(row);
+    }
+
+    // Note: We recommend adding security rules that require auth for writes in production,
+    // and that messages.listingId references an existing listing. For demo, permissive rules are acceptable.
+
+    // Parallax micro-interactions (keeps UI nice)
+    const l1 = document.getElementById('layer1'), l2 = document.getElementById('layer2'), l3 = document.getElementById('layer3');
+    let mouse={x:0,y:0};
+    window.addEventListener('mousemove',e=>{ mouse.x=e.clientX; mouse.y=e.clientY; });
+    (function loop(){ const t=window.scrollY||window.pageYOffset; const w=window.innerWidth,h=window.innerHeight; const mx=(mouse.x-w/2)/w; const my=(mouse.y-h/2)/h;
+      l1.style.transform=`translateX(${ -50 + mx*6 }%) translateY(${ -10 + t*0.03 }%)`; l2.style.transform=`translateX(${ -50 + mx*12 }%) translateY(${ -30 + t*0.06 }%)`; l3.style.transform=`translateX(${ -50 + mx*18 }%) translateY(${ -55 + t*0.09 }%)`; requestAnimationFrame(loop);
+    })();
+
+    // Messaging: sample index recommendation: collection messages, fields listingId ASC, createdAt ASC (optional)
+    // Start feed
+    startRealtimeFeed();
+
+    // Cleanup on unload
+    window.addEventListener('beforeunload', ()=>{ if(unsubSnapshot) unsubSnapshot(); });
+
   })();
   </script>
 </body>
