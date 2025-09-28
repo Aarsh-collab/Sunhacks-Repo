@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>My Meetups</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Arial;margin:20px}
+    .tabs button[aria-selected="true"]{background:#111;color:#fff}
+    .card{border:1px solid #ddd;border-radius:12px;padding:12px;margin:10px 0;max-width:560px}
+    button{padding:6px 10px;border-radius:10px;border:1px solid #888;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div>
+    <button id="btnSeller">Sign in as Seller (u1)</button>
+    <button id="btnBuyer">Sign in as Buyer (u2)</button>
+    <span id="who" style="margin-left:10px;color:#555"></span>
+  </div>
+
+  <div class="tabs" style="margin:12px 0">
+    <button id="tabBuyer" aria-selected="true">Buyer</button>
+    <button id="tabSeller" aria-selected="false">Seller</button>
+  </div>
+
+  <div id="list"></div>
+
+  <script type="module">
+    import { signInAs, currentUser, listMeetupsBy, acceptMeetup, completeMeetup } from "../services/meetups.demo.js";
+    const $=s=>document.querySelector(s);
+    function toast(m){ alert(m); }
+
+    const state={ tab:'buyer' };
+    function showUser(){ const u=currentUser(); $("#who").textContent=`Signed in: ${u.displayName} (${u.uid})`; }
+    $("#btnSeller").onclick=()=>{ signInAs('u1'); showUser(); render(); };
+    $("#btnBuyer").onclick =()=>{ signInAs('u2'); showUser(); render(); };
+    showUser();
+
+    $("#tabBuyer").onclick = ()=>{ state.tab='buyer'; $("#tabBuyer").setAttribute('aria-selected','true'); $("#tabSeller").setAttribute('aria-selected','false'); render(); };
+    $("#tabSeller").onclick = ()=>{ state.tab='seller'; $("#tabSeller").setAttribute('aria-selected','true'); $("#tabBuyer").setAttribute('aria-selected','false'); render(); };
+
+    async function render(){
+      const me=currentUser();
+      const data=listMeetupsBy(me.uid, state.tab);
+      const list=$("#list"); list.innerHTML="";
+      if(!data.length){ list.innerHTML="<p>No meetups yet</p>"; return; }
+      for(const m of data){
+        const card=document.createElement('div'); card.className='card';
+        card.innerHTML = `
+          <div><b>${m.spot}</b></div>
+          <div>${new Date(m.timeISO).toLocaleString()} • status: ${m.status}</div>
+          <div style="margin-top:8px"></div>`;
+        const actions=card.lastElementChild;
+
+        if(state.tab==='seller' && m.status==='proposed'){
+          const acc=document.createElement('button'); acc.textContent='Accept';
+          acc.onclick=async()=>{ try{ await acceptMeetup(m.id); toast('Accepted'); render(); }catch(e){ toast(e.message);} };
+          actions.appendChild(acc);
+        }
+        const done=document.createElement('button'); done.textContent='Mark Completed';
+        done.style.marginLeft='8px';
+        done.onclick=async()=>{ try{ await completeMeetup(m.id); toast('Completed'); render(); }catch(e){ toast(e.message);} };
+        actions.appendChild(done);
+
+        list.appendChild(card);
+      }
+    }
+    render();
+  </script>
+</body>
+</html>
