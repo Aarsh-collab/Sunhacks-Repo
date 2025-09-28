@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Messages • SunDevil Books</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --asu-maroon:#8C1D40;
+      --asu-maroon-dark:#5A1028;
+      --asu-gold:#FFC627;
+      --bg:#F6F4F2;
+      --surface:#FBF8F4;
+      --card:#FFFFFF;
+      --text:#1B1C1F;
+      --muted:#5F646E;
+      --border:rgba(27,27,31,.12);
+      --shadow-sm:0 14px 28px rgba(18,16,14,.08);
+      --shadow-lg:0 32px 80px rgba(16,14,12,.18);
+      --radius:18px;
+      --radius-sm:12px;
+      --transition:220ms cubic-bezier(.4,0,.2,1);
+      --focus-ring:0 0 0 3px rgba(255,198,39,.55);
+    }
+
+    *,*::before,*::after{box-sizing:border-box;}
+    body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:radial-gradient(circle at -10% -20%,rgba(255,198,39,.2)0%,rgba(140,29,64,.05)35%,var(--bg)70%);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+    a{color:var(--asu-maroon);text-decoration:none;transition:color var(--transition);} a:hover{color:var(--asu-maroon-dark);} a:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:999px;}
+
+    header.top-nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.94);border-bottom:1px solid rgba(140,29,64,.12);backdrop-filter:saturate(180%) blur(18px);padding:14px clamp(16px,4vw,40px);display:flex;align-items:center;justify-content:space-between;}
+    .nav-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1rem;color:var(--asu-maroon);letter-spacing:.02em;}
+    .brand-badge{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:14px;background:var(--asu-maroon);color:var(--asu-gold);font-weight:800;box-shadow:var(--shadow-sm);}
+    .nav-links{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .nav-link{padding:10px 16px;border-radius:999px;color:var(--text);font-weight:600;transition:background var(--transition),color var(--transition);} .nav-link:hover{background:rgba(140,29,64,.08);} .nav-link.is-active{background:var(--asu-maroon);color:#fff;} .nav-link.is-disabled{color:var(--muted);pointer-events:none;opacity:.5;}
+
+    main.page{flex:1;max-width:1180px;margin:0 auto;padding:clamp(24px,6vw,48px);display:grid;gap:24px;grid-template-columns:320px minmax(0,1fr);} 
+    @media (max-width:960px){ main.page{grid-template-columns:1fr;} }
+
+    .panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);border:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+
+    .threads-header{padding:18px 22px;border-bottom:1px solid rgba(27,27,31,.12);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .threads-header h2{margin:0;font-size:1.1rem;color:var(--asu-maroon);}
+    .thread-list{flex:1;overflow:auto;display:flex;flex-direction:column;}
+    .thread-item{padding:16px 20px;border-bottom:1px solid rgba(27,27,31,.08);display:grid;gap:6px;cursor:pointer;transition:background var(--transition);}
+    .thread-item:hover{background:rgba(140,29,64,.08);} .thread-item.active{background:rgba(140,29,64,.16);}
+    .thread-title{font-weight:700;color:var(--text);}
+    .thread-sub{display:flex;justify-content:space-between;gap:16px;color:var(--muted);font-size:.85rem;}
+
+    .conversation{display:flex;flex-direction:column;min-height:0;}
+    .conversation-header{padding:20px 24px;border-bottom:1px solid rgba(27,27,31,.12);display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+    .conversation-header h2{margin:0;font-size:1.3rem;font-weight:700;color:var(--text);} 
+    .conversation-body{flex:1;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:16px;background:var(--surface);}
+    .bubble{max-width:70%;padding:12px 16px;border-radius:16px;background:#fff;border:1px solid rgba(27,27,31,.08);box-shadow:0 10px 24px rgba(16,14,12,.08);}
+    .bubble.me{margin-left:auto;background:linear-gradient(135deg,var(--asu-maroon),var(--asu-maroon-dark));color:#fff;border:none;}
+    .bubble .meta{margin-top:6px;font-size:.75rem;color:rgba(255,255,255,.78);}
+    .bubble.me .meta{color:rgba(255,255,255,.78);} .bubble.other .meta{color:var(--muted);}
+
+    .composer{padding:18px 24px;border-top:1px solid rgba(27,27,31,.12);display:flex;gap:12px;background:var(--card);}
+    .composer textarea{flex:1;border:1px solid rgba(27,27,31,.18);border-radius:var(--radius-sm);padding:12px 14px;font-family:'Inter',sans-serif;font-size:.95rem;resize:none;min-height:54px;transition:border-color var(--transition),box-shadow var(--transition);} 
+    .composer textarea:focus{outline:none;border-color:var(--asu-maroon);box-shadow:var(--focus-ring);} 
+    .btn{border:none;border-radius:999px;padding:10px 18px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform var(--transition),box-shadow var(--transition),background var(--transition);} 
+    .btn:hover{transform:translateY(-1px);} 
+    .btn-primary{background:var(--asu-maroon);color:#fff;} .btn-primary:hover{background:var(--asu-maroon-dark);} 
+    .btn-ghost{background:rgba(140,29,64,.12);color:var(--asu-maroon);} .btn-ghost:hover{background:rgba(140,29,64,.2);} 
+
+    #toastContainer{position:fixed;top:24px;right:24px;z-index:80;display:flex;flex-direction:column;gap:10px;}
+    .toast{background:var(--asu-maroon);color:#fff;padding:12px 16px;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);font-weight:600;opacity:0;transform:translateY(0);transition:opacity var(--transition),transform var(--transition);} 
+    .toast.err{background:#9E1F35;}
+
+    .empty-state{text-align:center;color:var(--muted);padding:40px;}
+
+    @media (max-width:720px){
+      header.top-nav{flex-direction:column;gap:12px;}
+      .nav-links{justify-content:center;}
+      .threads-header{padding:16px;}
+      .composer{padding:16px;}
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{transition:none!important;animation:none!important;}
+    }
+  </style>
+</head>
+<body>
+<header class="top-nav">
+  <div class="nav-brand" aria-label="SunDevil Books">
+    <span class="brand-badge" aria-hidden="true">ASU</span>
+    <span>SunDevil Books</span>
+  </div>
+  <nav class="nav-links" aria-label="Primary navigation">
+    <a class="nav-link" href="marketplace.html">Marketplace</a>
+    <a class="nav-link" href="auto-list.html">Auto-List (Photo)</a>
+    <a class="nav-link is-active" href="messages.html">Messages</a>
+    <a class="nav-link" href="my-listings.html">My Listings</a>
+    <a class="nav-link is-disabled" href="#" aria-disabled="true">Login</a>
+  </nav>
+</header>
+
+<main class="page">
+  <section class="panel" aria-label="Threads">
+    <div class="threads-header">
+      <h2>Threads</h2>
+      <button id="refreshThreads" class="btn btn-ghost" type="button">Refresh</button>
+    </div>
+    <div id="threadList" class="thread-list" aria-live="polite"></div>
+  </section>
+
+  <section class="panel conversation" aria-label="Messages">
+    <div class="conversation-header">
+      <div>
+        <h2 id="conversationTitle">Select a thread</h2>
+        <div id="conversationSub" class="muted small"></div>
+      </div>
+      <div id="conversationMeta" class="muted small"></div>
+    </div>
+    <div id="conversationBody" class="conversation-body"></div>
+    <form id="composer" class="composer" autocomplete="off">
+      <textarea id="messageInput" placeholder="Type a message…" aria-label="Message"></textarea>
+      <button id="sendBtn" class="btn btn-primary" type="submit">Send</button>
+    </form>
+  </section>
+</main>
+
+<div id="toastContainer" aria-live="polite"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDa8jBTAxpNw_01cYdke_IQqAS7dh83d6k",
+    authDomain: "asu-textbook-marketplace.firebaseapp.com",
+    projectId: "asu-textbook-marketplace",
+    storageBucket: "asu-textbook-marketplace.appspot.com",
+    messagingSenderId: "275260067181",
+    appId: "1:275260067181:web:2abd6a3f46f484bad69e64",
+    measurementId: "G-PG98RMLS6V"
+  };
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  const threadListEl = document.getElementById('threadList');
+  const conversationBody = document.getElementById('conversationBody');
+  const composerForm = document.getElementById('composer');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const refreshThreadsBtn = document.getElementById('refreshThreads');
+  const conversationTitle = document.getElementById('conversationTitle');
+  const conversationSub = document.getElementById('conversationSub');
+  const conversationMeta = document.getElementById('conversationMeta');
+  const toastContainer = document.getElementById('toastContainer');
+
+  const userCache = new Map();
+  const listingCache = new Map();
+  const state = {
+    uid: null,
+    threads: [],
+    currentThread: null,
+    threadUnsub: null,
+    messagesUnsub: null,
+    deepLink: null
+  };
+
+  const params = new URLSearchParams(location.search);
+  const deepListing = params.get('listing');
+  const deepSeller = params.get('seller');
+  if (deepListing && deepSeller){
+    state.deepLink = { listingId: deepListing, sellerUid: deepSeller, ready: false };
+  }
+
+  function toast(message, type='ok'){
+    const el = document.createElement('div');
+    el.className = 'toast' + (type === 'err' ? ' err' : '');
+    el.textContent = message;
+    toastContainer.appendChild(el);
+    requestAnimationFrame(()=>{ el.style.opacity = '1'; });
+    setTimeout(()=>{
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(-6px)';
+      setTimeout(()=>el.remove(),220);
+    }, 2600);
+  }
+
+  function ensureAuth(user){
+    if (!user){
+      window.location.href = 'login.html';
+      return false;
+    }
+    if (!user.email || !user.email.toLowerCase().endsWith('@asu.edu')){
+      auth.signOut().finally(()=> window.location.href = 'login.html');
+      return false;
+    }
+    return true;
+  }
+
+  function fetchUser(uid){
+    if (!uid) return Promise.resolve({ displayName:'Unknown user', email:'' });
+    if (userCache.has(uid)) return Promise.resolve(userCache.get(uid));
+    return db.collection('users').doc(uid).get().then(snap => {
+      const data = snap.data() || {};
+      const info = { displayName: data.displayName || data.asuEmail || 'User', email: data.asuEmail || '' };
+      userCache.set(uid, info);
+      return info;
+    }).catch(err => {
+      console.error('user fetch failed', err);
+      const info = { displayName:'User', email:'' };
+      userCache.set(uid, info);
+      return info;
+    });
+  }
+
+  function fetchListing(listingId){
+    if (!listingId) return Promise.resolve({ title:'Listing' });
+    if (listingCache.has(listingId)) return Promise.resolve(listingCache.get(listingId));
+    return db.collection('listings').doc(listingId).get().then(snap => {
+      const data = snap.data() || {};
+      const info = { title: data.title || data.isbn || 'Listing' };
+      listingCache.set(listingId, info);
+      return info;
+    }).catch(err => {
+      console.error('listing fetch failed', err);
+      const info = { title:'Listing' };
+      listingCache.set(listingId, info);
+      return info;
+    });
+  }
+
+  function formatRelative(ms){
+    if (!ms) return '';
+    const diff = Date.now() - ms;
+    if (diff < 60_000) return 'Just now';
+    if (diff < 3_600_000) return Math.round(diff/60_000) + 'm ago';
+    if (diff < 86_400_000) return Math.round(diff/3_600_000) + 'h ago';
+    return new Date(ms).toLocaleDateString();
+  }
+
+  function formatMessageTime(ms){
+    if (!ms) return '';
+    return new Date(ms).toLocaleTimeString(undefined,{ hour:'numeric', minute:'2-digit' });
+  }
+
+  function renderThreads(){
+    threadListEl.innerHTML = '';
+    if (!state.threads.length){
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.textContent = 'No conversations yet.';
+      threadListEl.appendChild(empty);
+      conversationTitle.textContent = 'Select a thread';
+      conversationSub.textContent = '';
+      conversationBody.innerHTML = '';
+      return;
+    }
+    state.threads.forEach(thread => {
+      const otherUid = thread.participants.find(p => p !== state.uid) || thread.participants[0];
+      const item = document.createElement('div');
+      item.className = 'thread-item' + (state.currentThread && state.currentThread.id === thread.id ? ' active' : '');
+      const title = document.createElement('div');
+      title.className = 'thread-title';
+      title.textContent = thread.listingTitle || 'Listing';
+      const sub = document.createElement('div');
+      sub.className = 'thread-sub';
+      sub.innerHTML = `<span>${thread.otherName || 'User'}</span><span>${formatRelative(thread.updatedAt)}</span>`;
+      const last = document.createElement('div');
+      last.className = 'muted small';
+      last.textContent = thread.lastMessage || '—';
+      item.appendChild(title);
+      item.appendChild(sub);
+      item.appendChild(last);
+      item.addEventListener('click', () => selectThread(thread));
+      threadListEl.appendChild(item);
+    });
+  }
+
+  function renderMessages(messages){
+    conversationBody.innerHTML = '';
+    if (!messages.length){
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.textContent = 'No messages yet. Start the conversation!';
+      conversationBody.appendChild(empty);
+      return;
+    }
+    messages.forEach(msg => {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble' + (msg.senderUid === state.uid ? ' me' : ' other');
+      const text = document.createElement('div');
+      text.textContent = msg.text;
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = formatMessageTime(msg.createdAt);
+      bubble.appendChild(text);
+      bubble.appendChild(meta);
+      conversationBody.appendChild(bubble);
+    });
+    conversationBody.scrollTop = conversationBody.scrollHeight;
+  }
+
+  function selectThread(thread){
+    if (!thread) return;
+    if (state.messagesUnsub) state.messagesUnsub();
+    state.currentThread = thread;
+    state.threads = state.threads.map(t => ({ ...t, isActive: t.id === thread.id }));
+    renderThreads();
+    const otherUid = thread.participants.find(p => p !== state.uid) || thread.participants[0];
+    fetchUser(otherUid).then(info => {
+      conversationTitle.textContent = info.displayName || 'Conversation';
+      conversationSub.textContent = info.email || '';
+    });
+    fetchListing(thread.listingId).then(info => {
+      conversationMeta.textContent = info.title;
+    });
+    if (!thread.id){
+      conversationBody.innerHTML = '';
+      return;
+    }
+    state.messagesUnsub = db.collection('threads').doc(thread.id)
+      .collection('messages')
+      .orderBy('createdAt')
+      .limit(200)
+      .onSnapshot(snap => {
+        const messages = [];
+        snap.forEach(doc => {
+          const data = doc.data();
+          let createdAt = data.createdAt;
+          if (createdAt && typeof createdAt.toMillis === 'function') createdAt = createdAt.toMillis();
+          messages.push({ id: doc.id, ...data, createdAt: Number(createdAt || 0) });
+        });
+        renderMessages(messages);
+      }, err => {
+        console.error('messages load failed', err);
+        toast('Failed to load messages','err');
+        renderMessages([]);
+      });
+  }
+
+  function watchThreads(){
+    if (state.threadUnsub) state.threadUnsub();
+    state.threadUnsub = db.collection('threads')
+      .where('participants','array-contains', state.uid)
+      .limit(50)
+      .onSnapshot(async snap => {
+        const threads = [];
+        snap.forEach(doc => {
+          const data = doc.data();
+          let updatedAt = data.updatedAt;
+          if (updatedAt && typeof updatedAt.toMillis === 'function') updatedAt = updatedAt.toMillis();
+          threads.push({ id: doc.id, ...data, updatedAt: Number(updatedAt || 0) });
+        });
+        threads.sort((a,b)=> b.updatedAt - a.updatedAt);
+        for (const thread of threads){
+          const otherUid = thread.participants.find(p => p !== state.uid) || thread.participants[0];
+          const userInfo = await fetchUser(otherUid);
+          const listingInfo = await fetchListing(thread.listingId);
+          thread.otherName = userInfo.displayName || userInfo.email || 'User';
+          thread.listingTitle = listingInfo.title || 'Listing';
+        }
+        state.threads = threads;
+        renderThreads();
+        handleDeepLink();
+      }, err => {
+        console.error('thread load failed', err);
+        toast('Failed to load threads','err');
+        state.threads = [];
+        renderThreads();
+      });
+  }
+
+  function handleDeepLink(){
+    if (!state.deepLink || state.deepLink.ready) return;
+    const { listingId, sellerUid } = state.deepLink;
+    const existing = state.threads.find(t => t.listingId === listingId && t.participants.includes(sellerUid));
+    if (existing){
+      state.deepLink.ready = true;
+      selectThread(existing);
+      return;
+    }
+    if (!state.uid){
+      return;
+    }
+    // create new thread
+    db.collection('threads').add({
+      listingId,
+      participants: [state.uid, sellerUid],
+      lastMessage: '',
+      updatedAt: Date.now()
+    }).then(docRef => {
+      state.deepLink.ready = true;
+      selectThread({ id: docRef.id, listingId, participants: [state.uid, sellerUid], lastMessage:'', updatedAt: Date.now() });
+    }).catch(err => {
+      console.error('create thread failed', err);
+      toast('Could not start conversation','err');
+      state.deepLink = null;
+    });
+  }
+
+  composerForm.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const text = (messageInput.value || '').trim();
+    if (!text || !state.currentThread) return;
+    if (!state.uid){ toast('Sign in to send messages','err'); return; }
+    sendBtn.disabled = true;
+    try {
+      const threadId = state.currentThread.id;
+      const messagesRef = db.collection('threads').doc(threadId).collection('messages');
+      await messagesRef.add({
+        senderUid: state.uid,
+        text,
+        createdAt: Date.now()
+      });
+      await db.collection('threads').doc(threadId).update({
+        lastMessage: text,
+        updatedAt: Date.now()
+      });
+      messageInput.value = '';
+    } catch (err) {
+      console.error('send failed', err);
+      toast('Failed to send message','err');
+    } finally {
+      sendBtn.disabled = false;
+      messageInput.focus();
+    }
+  });
+
+  refreshThreadsBtn.addEventListener('click', () => {
+    toast('Refreshing threads…');
+    watchThreads();
+  });
+
+  auth.onAuthStateChanged(user => {
+    if (!ensureAuth(user)) return;
+    state.uid = user.uid;
+    watchThreads();
+  });
+</script>
+</body>
+</html>

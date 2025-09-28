@@ -124,6 +124,7 @@
   <nav class="nav-links" aria-label="Primary navigation">
     <a class="nav-link" href="marketplace.html">Marketplace</a>
     <a class="nav-link" href="auto-list.html">Auto-List (Photo)</a>
+    <a class="nav-link" href="messages.html">Messages</a>
     <a class="nav-link is-active" href="my-listings.html">My Listings</a>
     <a class="nav-link is-disabled" href="#" aria-disabled="true">Login</a>
   </nav>
@@ -211,12 +212,11 @@
       sellerMeetups: [],
       buyerMeetups: [],
       unsubscribeListings: null,
-      unsubscribeSeller: null,
-      unsubscribeBuyer: null,
       loading: true
     };
 
     const listingCache = new Map();
+    let currentUserUid = null;
 
     sellerToggle.addEventListener('click', () => togglePanel(sellerBody, sellerToggle));
     buyerToggle.addEventListener('click', () => togglePanel(buyerBody, buyerToggle));
@@ -518,13 +518,13 @@
         accept.type = 'button';
         accept.className = 'btn btn-primary';
         accept.textContent = 'Accept';
-        accept.addEventListener('click', () => handleMeetupAction(item, 'accepted'));
+        accept.addEventListener('click', () => acceptMeetup(item));
 
         const cancel = document.createElement('button');
         cancel.type = 'button';
         cancel.className = 'btn btn-outline';
         cancel.textContent = 'Cancel';
-        cancel.addEventListener('click', () => handleMeetupAction(item, 'cancelled'));
+        cancel.addEventListener('click', () => cancelMeetup(item));
 
         actions.appendChild(accept);
         actions.appendChild(cancel);
@@ -574,83 +574,91 @@
       });
     }
 
-    async function handleMeetupAction(meetup, targetStatus){
-      const verb = targetStatus === 'accepted' ? 'accept this meetup?' : 'cancel this meetup request?';
-      if (!confirm(`Are you sure you want to ${verb}`)) return;
+    async function loadMeetupRequests(uid){
+      sellerBody.innerHTML = '<div class="empty-msg">Loading meetup requests…</div>';
+      const snap = await db.collection('meetups')
+        .where('sellerUid','==', uid)
+        .limit(200)
+        .get();
+      const items = [];
+      snap.forEach(doc => {
+        const data = doc.data();
+        const entry = { ...data, id: doc.id };
+        let createdAt = entry.createdAt;
+        if (createdAt && typeof createdAt.toMillis === 'function') createdAt = createdAt.toMillis();
+        entry.createdAt = Number(createdAt || 0);
+        items.push(entry);
+      });
+      state.sellerMeetups = items
+        .filter(item => item.status === 'proposed')
+        .sort((a,b)=> b.createdAt - a.createdAt);
+      renderSellerMeetups();
+    }
+
+    async function loadMyProposals(uid){
+      buyerBody.innerHTML = '<div class="empty-msg">Loading proposed meetups…</div>';
+      const snap = await db.collection('meetups')
+        .where('buyerUid','==', uid)
+        .limit(200)
+        .get();
+      const items = [];
+      snap.forEach(doc => {
+        const data = doc.data();
+        const entry = { ...data, id: doc.id };
+        let createdAt = entry.createdAt;
+        if (createdAt && typeof createdAt.toMillis === 'function') createdAt = createdAt.toMillis();
+        entry.createdAt = Number(createdAt || 0);
+        items.push(entry);
+      });
+      state.buyerMeetups = items.sort((a,b)=> b.createdAt - a.createdAt);
+      renderBuyerMeetups();
+    }
+
+    async function acceptMeetup(meetup){
+      if (!confirm('Accept this meetup request?')) return;
       try {
-        await db.collection('meetups').doc(meetup.id).update({ status: targetStatus });
-        if (targetStatus === 'accepted') {
-          await db.collection('listings').doc(meetup.listingId).update({ status: 'meetup_set' });
-          toast('Meetup accepted');
-        } else if (targetStatus === 'cancelled') {
-          await db.collection('listings').doc(meetup.listingId).update({ status: 'active' });
-          toast('Meetup cancelled');
+        const batch = db.batch();
+        const meetupRef = db.collection('meetups').doc(meetup.id);
+        const listingRef = db.collection('listings').doc(meetup.listingId);
+        batch.update(meetupRef, { status: 'accepted' });
+        batch.update(listingRef, { status: 'meetup_set' });
+        await batch.commit();
+        toast('Meetup accepted');
+        if (currentUserUid){
+          try {
+            await loadMeetupRequests(currentUserUid);
+            await loadMyProposals(currentUserUid);
+          } catch (err) {
+            console.error('refresh failed', err);
+          }
         }
       } catch (err) {
         console.error(err);
-        toast('Failed to update meetup','err');
+        toast('Could not accept: ' + (err.code || 'error'), 'err');
       }
     }
 
-    function subscribeSellerMeetups(uid){
-      if (state.unsubscribeSeller) state.unsubscribeSeller();
-      sellerBody.innerHTML = '<div class="empty-msg">Loading meetup requests…</div>';
+    async function cancelMeetup(meetup){
+      if (!confirm('Cancel this meetup request?')) return;
       try {
-        const q = db.collection('meetups').where('sellerUid','==', uid).limit(50);
-        state.unsubscribeSeller = q.onSnapshot(snap => {
-          const items = [];
-          snap.forEach(doc => {
-            const data = doc.data();
-            const createdAt = data.createdAt && typeof data.createdAt.toMillis === 'function'
-              ? data.createdAt.toMillis()
-              : (typeof data.createdAt === 'number' ? data.createdAt : Date.now());
-            items.push({ ...data, createdAt });
-          });
-          state.sellerMeetups = items
-            .filter(item => item.status === 'proposed')
-            .sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
-          renderSellerMeetups();
-        }, err => {
-          console.error(err);
-          toast('Failed to load meetup requests','err');
-          state.sellerMeetups = [];
-          renderSellerMeetups();
-        });
+        const batch = db.batch();
+        const meetupRef = db.collection('meetups').doc(meetup.id);
+        const listingRef = db.collection('listings').doc(meetup.listingId);
+        batch.update(meetupRef, { status: 'cancelled' });
+        batch.update(listingRef, { status: 'active' });
+        await batch.commit();
+        toast('Meetup cancelled');
+        if (currentUserUid){
+          try {
+            await loadMeetupRequests(currentUserUid);
+            await loadMyProposals(currentUserUid);
+          } catch (err) {
+            console.error('refresh failed', err);
+          }
+        }
       } catch (err) {
         console.error(err);
-        toast('Meetup query failed','err');
-        state.sellerMeetups = [];
-        renderSellerMeetups();
-      }
-    }
-
-    function subscribeBuyerMeetups(uid){
-      if (state.unsubscribeBuyer) state.unsubscribeBuyer();
-      buyerBody.innerHTML = '<div class="empty-msg">Loading proposed meetups…</div>';
-      try {
-        const q = db.collection('meetups').where('buyerUid','==', uid).limit(50);
-        state.unsubscribeBuyer = q.onSnapshot(snap => {
-          const items = [];
-          snap.forEach(doc => {
-            const data = doc.data();
-            const createdAt = data.createdAt && typeof data.createdAt.toMillis === 'function'
-              ? data.createdAt.toMillis()
-              : (typeof data.createdAt === 'number' ? data.createdAt : Date.now());
-            items.push({ ...data, createdAt });
-          });
-          state.buyerMeetups = items.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
-          renderBuyerMeetups();
-        }, err => {
-          console.error(err);
-          toast('Failed to load proposed meetups','err');
-          state.buyerMeetups = [];
-          renderBuyerMeetups();
-        });
-      } catch (err) {
-        console.error(err);
-        toast('Meetup query failed','err');
-        state.buyerMeetups = [];
-        renderBuyerMeetups();
+        toast('Could not cancel: ' + (err.code || 'error'), 'err');
       }
     }
 
@@ -677,13 +685,13 @@
         state.unsubscribeListings = q.onSnapshot((snap) => {
           const items = [];
           snap.forEach(doc => items.push(normalizeListing(doc)));
-          items.sort((a,b)=> (Number(b.createdAt||0) - Number(a.createdAt||0)));
+          items.sort((a,b)=> Number(b.createdAt||0) - Number(a.createdAt||0));
           state.all = items;
           state.loading = false;
           applyFilters();
         }, (error) => {
           console.error(error);
-          toast('Unable to load listings. Check console for details.','err');
+          toast('Unable to load listings. Check console for details.', 'err');
           state.loading = false;
           state.all = [];
           state.filtered = [];
@@ -692,11 +700,11 @@
       } catch (err) {
         console.error(err);
         if (err && err.code === 'permission-denied') {
-          toast('Permission denied — sign in or relax rules for /listings','err');
+          toast('Listings: permission denied — sign in or relax rules', 'err');
         } else if (err && err.code === 'failed-precondition') {
-          toast('Add composite index or use client-side sort (now enabled).','err');
+          toast('Listings index needed; client sort in use.', 'err');
         } else {
-          toast('Query failed — see console for details.','err');
+          toast('Listing query failed — see console.', 'err');
         }
         state.loading = false;
         state.all = [];
@@ -716,22 +724,48 @@
     auth.onAuthStateChanged(async (user) => {
       if (!user){
         if (state.unsubscribeListings) state.unsubscribeListings();
-        if (state.unsubscribeSeller) state.unsubscribeSeller();
-        if (state.unsubscribeBuyer) state.unsubscribeBuyer();
+        currentUserUid = null;
         window.location.href = 'login.html';
         return;
       }
       if (!user.email || !user.email.toLowerCase().endsWith('@asu.edu')){
         if (state.unsubscribeListings) state.unsubscribeListings();
-        if (state.unsubscribeSeller) state.unsubscribeSeller();
-        if (state.unsubscribeBuyer) state.unsubscribeBuyer();
         try { await auth.signOut(); } catch (err) { console.error(err); }
+        currentUserUid = null;
         window.location.href = 'login.html';
         return;
       }
+      currentUserUid = user.uid;
       subscribe(user.uid);
-      subscribeSellerMeetups(user.uid);
-      subscribeBuyerMeetups(user.uid);
+      try {
+        await loadMeetupRequests(user.uid);
+      } catch (err) {
+        console.error('meetups load failed', err);
+        if (err && err.code === 'permission-denied') {
+          toast('Meetups: permission denied — sign in or relax /meetups rules', 'err');
+        } else if (err && err.code === 'failed-precondition') {
+          toast('Index needed; using client-side sort instead.', 'err');
+        } else {
+          toast('Failed to load proposed meetings — see console.', 'err');
+        }
+        state.sellerMeetups = [];
+        renderSellerMeetups();
+      }
+
+      try {
+        await loadMyProposals(user.uid);
+      } catch (err) {
+        console.error('meetups load failed', err);
+        if (err && err.code === 'permission-denied') {
+          toast('Meetups: permission denied — sign in or relax /meetups rules', 'err');
+        } else if (err && err.code === 'failed-precondition') {
+          toast('Index needed; using client-side sort instead.', 'err');
+        } else {
+          toast('Failed to load proposed meetings — see console.', 'err');
+        }
+        state.buyerMeetups = [];
+        renderBuyerMeetups();
+      }
     });
   </script>
 </body>

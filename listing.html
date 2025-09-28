@@ -109,6 +109,7 @@ main.page{max-width:960px;margin:0 auto;padding:clamp(20px,4vw,48px);display:fle
   <nav class="nav-links" aria-label="Primary navigation">
     <a class="nav-link is-active" href="marketplace.html">Marketplace</a>
     <a class="nav-link" href="auto-list.html">Auto-List (Photo)</a>
+    <a class="nav-link" href="messages.html">Messages</a>
     <a class="nav-link" href="my-listings.html">My Listings</a>
     <a class="nav-link is-disabled" href="#" aria-disabled="true">Login</a>
   </nav>
@@ -135,6 +136,7 @@ main.page{max-width:960px;margin:0 auto;padding:clamp(20px,4vw,48px);display:fle
       <div id="description" class="description muted"></div>
       <div class="actions">
         <a id="mailto" class="btn">Contact seller</a>
+        <a id="messageSeller" class="btn btn-ghost" href="#" style="display:none">Message seller</a>
         <button id="meetupBtn" class="btn btn-outline" type="button">Propose meetup</button>
       </div>
       <div class="listing-id">Listing ID: <span id="id">—</span></div>
@@ -197,6 +199,8 @@ const params = new URLSearchParams(location.search);
 
 const meetupBtn = document.getElementById('meetupBtn');
 if (meetupBtn) meetupBtn.disabled = true;
+const messageBtn = document.getElementById('messageSeller');
+if (messageBtn) messageBtn.style.display = 'none';
 
 const listingId = params.get('id') || '';
 const idEl = document.getElementById('id');
@@ -227,6 +231,7 @@ let currentListing = null;
 auth.onAuthStateChanged(user => {
   authUser = user;
   updateMeetupButtonState();
+  updateMessageButton();
 });
 
 idEl.textContent = listingId || '—';
@@ -281,6 +286,25 @@ function updateMeetupButtonState(){
   } else {
     meetupBtn.disabled = false;
     meetupBtn.removeAttribute('title');
+  }
+}
+
+function updateMessageButton(){
+  if (!messageBtn) return;
+  if (!currentListing || !currentListing.ownerUid){
+    messageBtn.style.display = 'none';
+    return;
+  }
+  messageBtn.style.display = 'inline-flex';
+  if (!authUser){
+    messageBtn.href = 'login.html';
+    messageBtn.title = 'Sign in to message the seller';
+  } else if (authUser.uid === currentListing.ownerUid){
+    messageBtn.href = '#';
+    messageBtn.title = 'You already own this listing';
+  } else {
+    messageBtn.href = `messages.html?listing=${encodeURIComponent(currentListing.id)}&seller=${encodeURIComponent(currentListing.ownerUid)}`;
+    messageBtn.title = '';
   }
 }
 
@@ -358,7 +382,8 @@ Thanks.');
       status: doc.status || 'active'
     };
     updateMeetupButtonState();
-  }).catch(err => {
+    updateMessageButton();
+}).catch(err => {
     console.error(err);
     titleEl.textContent = 'Error loading listing';
   });
@@ -391,6 +416,20 @@ if (meetupBtn){
 
 if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
 if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+
+if (messageBtn){
+  messageBtn.addEventListener('click', (ev) => {
+    if (!currentListing || !currentListing.ownerUid) return;
+    if (!authUser){
+      messageBtn.href = 'login.html';
+      return;
+    }
+    if (authUser.uid === currentListing.ownerUid){
+      ev.preventDefault();
+      toast('You already own this listing','err');
+    }
+  });
+}
 
 if (meetupForm){
 meetupForm.addEventListener('submit', async (ev) => {
