@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SunDevil Books • Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+    import {
+      getAuth,
+      signInWithPopup,
+      GoogleAuthProvider,
+      signOut as firebaseSignOut,
+      onAuthStateChanged
+    } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc
+    } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDa8jBTAxpNw_01cYdke_IQqAS7dh83d6k",
+      authDomain: "asu-textbook-marketplace.firebaseapp.com",
+      projectId: "asu-textbook-marketplace",
+      storageBucket: "asu-textbook-marketplace.appspot.com",
+      messagingSenderId: "275260067181",
+      appId: "1:275260067181:web:2abd6a3f46f484bad69e64"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ hd: 'asu.edu' });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginView = document.getElementById('login-view');
+      const signedView = document.getElementById('signed-view');
+      const errorEl = document.getElementById('error-message');
+      const welcomeNameEl = document.getElementById('welcome-name');
+      const userNameEl = document.getElementById('user-name');
+      const userEmailEl = document.getElementById('user-email');
+      const browseBtn = document.getElementById('browseBtn');
+      const createBtn = document.getElementById('createListingBtn');
+      const messagesBtn = document.getElementById('messagesBtn');
+
+      const setView = (view) => {
+        if (view === 'login') {
+          loginView.hidden = false;
+          signedView.hidden = true;
+          errorEl.hidden = true;
+        } else {
+          loginView.hidden = true;
+          signedView.hidden = false;
+          errorEl.hidden = true;
+        }
+      };
+
+      const showError = (message) => {
+        errorEl.textContent = message;
+        errorEl.hidden = false;
+      };
+
+      const hideError = () => {
+        errorEl.hidden = true;
+      };
+
+      const ensureUserDocument = async (user) => {
+        const userRef = doc(db, 'users', user.uid);
+        const snap = await getDoc(userRef);
+        const now = Date.now();
+        const baseDisplay = user.displayName || user.email.replace(/@.*/, '');
+        const baseDoc = {
+          uid: user.uid,
+          displayName: baseDisplay,
+          asuEmail: user.email,
+          reputation: { completedTrades: 0, rating: 5.0 },
+          createdAt: now
+        };
+
+        if (!snap.exists()) {
+          await setDoc(userRef, baseDoc);
+          return;
+        }
+
+        const data = snap.data() || {};
+        const patch = {};
+
+        if (typeof data.uid !== 'string') patch.uid = user.uid;
+        if (typeof data.displayName !== 'string') patch.displayName = baseDisplay;
+        if (typeof data.asuEmail !== 'string') patch.asuEmail = user.email;
+        if (
+          !data.reputation ||
+          typeof data.reputation.completedTrades !== 'number' ||
+          typeof data.reputation.rating !== 'number'
+        ) {
+          patch.reputation = { completedTrades: 0, rating: 5.0 };
+        }
+        if (typeof data.createdAt !== 'number') patch.createdAt = now;
+
+        if (Object.keys(patch).length) {
+          await setDoc(userRef, patch, { merge: true });
+        }
+      };
+
+      const handleSignedIn = async (user) => {
+        if (!user.email || !user.email.toLowerCase().endsWith('@asu.edu')) {
+          showError('Only ASU students can access this marketplace. Please use your @asu.edu email.');
+          await firebaseSignOut(auth);
+          setView('login');
+          return;
+        }
+
+        await ensureUserDocument(user);
+
+        const displayName = user.displayName || user.email.replace(/@.*/, '');
+        welcomeNameEl.textContent = displayName;
+        userNameEl.textContent = displayName;
+        userEmailEl.textContent = user.email;
+
+        setView('signed');
+        hideError();
+
+        window.setTimeout(() => {
+          window.goToFeed();
+        }, 600);
+      };
+
+      onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          setView('login');
+          return;
+        }
+        handleSignedIn(user).catch((err) => {
+          console.error('Auth state handling failed:', err);
+          showError('We hit a snag loading your profile. Please try signing in again.');
+          setView('login');
+        });
+      });
+
+      window.signIn = async () => {
+        hideError();
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error('Sign in error:', error);
+          showError('Sign in failed. Please try again.');
+        }
+      };
+
+      window.signOut = async () => {
+        try {
+          await firebaseSignOut(auth);
+        } catch (error) {
+          console.error('Sign out error:', error);
+        } finally {
+          window.location.href = 'login.html';
+        }
+      };
+
+      window.goToFeed = () => {
+        window.location.href = 'marketplace.html';
+      };
+
+      browseBtn.addEventListener('click', () => window.goToFeed());
+      createBtn.addEventListener('click', () => {
+        window.location.href = 'auto-list.html';
+      });
+      messagesBtn.addEventListener('click', () => {
+        window.location.href = 'messages.html';
+      });
+    });
+  </script>
+  <style>
+    :root {
+      --asu-maroon:#8C1D40;
+      --asu-maroon-dark:#5A1028;
+      --asu-gold:#FFC627;
+      --bg:#F9FAFB;
+      --card:#FFFFFF;
+      --text:#0B1B12;
+      --muted:#6B7280;
+      --radius:16px;
+      --shadow-lg:0 18px 50px rgba(6,24,12,.08);
+      --transition:220ms cubic-bezier(.4,0,.2,1);
+      --focus-ring:0 0 0 3px rgba(255,198,39,.55);
+    }
+
+    *, *::before, *::after { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      background:radial-gradient(circle at -10% -20%, rgba(255,198,39,.20) 0%, rgba(140,29,64,.05) 35%, var(--bg) 70%);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    a { color:var(--asu-maroon); text-decoration:none; }
+    a:hover { color:var(--asu-maroon-dark); }
+    a:focus-visible { outline:none; box-shadow:var(--focus-ring); border-radius:999px; }
+
+    header.top-nav {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px clamp(20px,4vw,48px);
+      background:rgba(255,255,255,.92);
+      border-bottom:1px solid rgba(140,29,64,.12);
+      backdrop-filter:saturate(180%) blur(18px);
+    }
+
+    .nav-brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.02em; color:var(--asu-maroon); }
+    .brand-badge { display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:14px; background:var(--asu-maroon); color:var(--asu-gold); font-weight:800; box-shadow:var(--shadow-lg); }
+
+    .nav-links { display:flex; gap:12px; }
+    .nav-link { padding:10px 18px; border-radius:999px; font-weight:600; color:var(--text); transition:background var(--transition), color var(--transition); }
+    .nav-link:hover { background:rgba(140,29,64,.08); }
+    .nav-link.is-active { background:var(--asu-maroon); color:#fff; }
+    .nav-link.is-disabled { color:var(--muted); opacity:.5; pointer-events:none; }
+
+    main.auth-shell {
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:clamp(24px,8vw,64px);
+    }
+
+    .auth-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,420px));
+      gap:clamp(24px,4vw,40px);
+      width:100%;
+      max-width:1080px;
+      align-items:stretch;
+    }
+
+    .brand-panel {
+      position:relative;
+      border-radius:var(--radius);
+      padding: clamp(28px,6vw,48px);
+      background:linear-gradient(140deg, rgba(140,29,64,.92) 0%, rgba(90,16,40,.92) 60%, rgba(255,198,39,.65) 100%);
+      color:#fff;
+      overflow:hidden;
+      box-shadow:var(--shadow-lg);
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+    }
+
+    .brand-panel::after {
+      content:"";
+      position:absolute;
+      inset:auto -40% -40% auto;
+      width:320px;
+      height:320px;
+      background:radial-gradient(circle, rgba(255,255,255,.25) 0%, transparent 60%);
+      opacity:.6;
+      pointer-events:none;
+    }
+
+    .brand-lockup { display:flex; align-items:center; gap:14px; font-size:1.1rem; font-weight:700; }
+    .brand-icon { font-size:2.2rem; }
+    .brand-panel h1 { font-size:2.4rem; font-weight:800; margin:0; }
+    .brand-panel p { font-size:1rem; max-width:320px; color:rgba(255,255,255,.82); line-height:1.5; }
+    .brand-list { list-style:none; display:grid; gap:12px; font-size:.95rem; }
+    .brand-list li { display:flex; align-items:flex-start; gap:10px; }
+    .brand-bullet { font-size:1.1rem; }
+
+    .card-panel {
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow-lg);
+      padding: clamp(28px,5vw,40px);
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+      border:1px solid rgba(140,29,64,.12);
+    }
+
+    .login-view, .signed-view { display:flex; flex-direction:column; gap:20px; }
+    .badge {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 14px;
+      border-radius:999px;
+      background:rgba(140,29,64,.12);
+      color:var(--asu-maroon);
+      font-weight:600;
+      font-size:.85rem;
+    }
+
+    .card-panel h2 { font-size:1.8rem; font-weight:700; margin:0; }
+    .card-panel p { color:var(--muted); line-height:1.6; font-size:1rem; }
+
+    .btn {
+      border:none;
+      padding:12px 20px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:1rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      transition:transform var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+
+    .btn-primary {
+      background:var(--asu-maroon);
+      color:#fff;
+      box-shadow:0 14px 28px rgba(140,29,64,.22);
+    }
+
+    .btn-primary:hover { background:var(--asu-maroon-dark); transform:translateY(-1px); }
+    .btn-primary:focus-visible { outline:none; box-shadow:var(--focus-ring); }
+
+    .btn-secondary {
+      background:rgba(140,29,64,.08);
+      color:var(--asu-maroon);
+    }
+
+    .btn-secondary:hover { background:rgba(140,29,64,.16); transform:translateY(-1px); }
+    .btn-secondary:focus-visible { outline:none; box-shadow:var(--focus-ring); }
+
+    .btn-outline {
+      border:2px solid rgba(140,29,64,.4);
+      background:transparent;
+      color:var(--asu-maroon);
+    }
+
+    .btn-outline:hover { background:rgba(140,29,64,.08); }
+
+    .danger {
+      background:#9E1F35;
+      color:#fff;
+    }
+
+    .danger:hover { background:#7B1629; }
+
+    .actions { display:flex; flex-wrap:wrap; gap:12px; }
+
+    .error-message {
+      padding:12px 16px;
+      border-radius:var(--radius-sm);
+      background:rgba(158,31,53,.1);
+      border:1px solid rgba(158,31,53,.3);
+      color:#7B1629;
+      font-weight:600;
+      font-size:.9rem;
+    }
+
+    .user-card {
+      background:rgba(140,29,64,.06);
+      border-radius:var(--radius-sm);
+      padding:18px;
+      display:grid;
+      gap:6px;
+    }
+
+    .user-email { font-size:.95rem; color:var(--muted); }
+    .status-chip {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 12px;
+      border-radius:999px;
+      background:rgba(140,29,64,.12);
+      color:var(--asu-maroon);
+      font-size:.85rem;
+      font-weight:600;
+    }
+
+    @media (max-width:960px) {
+      .auth-grid { grid-template-columns:minmax(0,1fr); }
+      .brand-panel { min-height:260px; }
+    }
+
+    @media (max-width:640px) {
+      header.top-nav { flex-direction:column; gap:12px; }
+      .nav-links { width:100%; justify-content:center; flex-wrap:wrap; }
+      main.auth-shell { padding:24px 18px; }
+      .card-panel { padding:28px 24px; }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { transition:none !important; animation:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-nav">
+    <div class="nav-brand" aria-label="SunDevil Books">
+      <span class="brand-badge" aria-hidden="true">ASU</span>
+      <span>SunDevil Books</span>
+    </div>
+    <nav class="nav-links" aria-label="Site navigation">
+      <a class="nav-link is-active" href="login.html">Login</a>
+      <a class="nav-link" href="marketplace.html">Marketplace</a>
+      <a class="nav-link" href="auto-list.html">Auto-List</a>
+    </nav>
+  </header>
+
+  <main class="auth-shell">
+    <div class="auth-grid">
+      <section class="brand-panel" aria-hidden="true">
+        <div class="brand-lockup">
+          <span class="brand-icon">📚</span>
+          <span>SunDevil Marketplace</span>
+        </div>
+        <h1>Textbooks that travel with the pitchfork.</h1>
+        <p>Join a marketplace designed for ASU students only — priced fairly, fast to pickup, and powered by your peers.</p>
+        <ul class="brand-list">
+          <li><span class="brand-bullet">✨</span>Curated for @asu.edu emails only</li>
+          <li><span class="brand-bullet">🤝</span>Reputation baked in for safer trades</li>
+          <li><span class="brand-bullet">⚡</span>Instant messaging to lock in meetups</li>
+        </ul>
+      </section>
+
+      <section class="card-panel">
+        <div id="login-view" class="login-view" role="region" aria-labelledby="login-heading">
+          <span class="badge">🎓 ASU Students Only</span>
+          <h2 id="login-heading">Welcome to SunDevil Books</h2>
+          <p>Sign in with your @asu.edu email to browse the marketplace, auto-list books, and coordinate textbook trades.</p>
+          <button class="btn btn-primary" type="button" onclick="signIn()">Sign in with ASU Email</button>
+          <div id="error-message" class="error-message" role="status" aria-live="polite" hidden></div>
+        </div>
+
+        <div id="signed-view" class="signed-view" role="region" aria-labelledby="welcome-heading" hidden>
+          <h2 id="welcome-heading">Welcome back, <span id="welcome-name"></span>!</h2>
+          <div class="user-card">
+            <strong id="user-name"></strong>
+            <span id="user-email" class="user-email"></span>
+            <span class="status-chip">✅ ASU Student Verified</span>
+          </div>
+          <div class="actions">
+            <button id="browseBtn" class="btn btn-primary" type="button">📚 Browse Textbooks</button>
+            <button id="createListingBtn" class="btn btn-secondary" type="button">➕ Create Listing</button>
+            <button id="messagesBtn" class="btn btn-secondary" type="button">📬 Messages</button>
+          </div>
+          <button class="btn btn-outline danger" type="button" onclick="signOut()">Sign Out</button>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

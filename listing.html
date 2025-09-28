@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Listing • SunDevil Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --asu-maroon:#8C1D40;
+  --asu-maroon-dark:#5A1028;
+  --asu-gold:#FFC627;
+  --bg:#F6F4F2;
+  --card:#FFFFFF;
+  --text:#1B1C1F;
+  --muted:#5F646E;
+  --border:rgba(27,27,31,.12);
+  --shadow-lg:0 32px 80px rgba(16,14,12,.18);
+  --shadow-sm:0 16px 32px rgba(18,16,14,.08);
+  --radius:20px;
+  --radius-sm:12px;
+  --transition:220ms cubic-bezier(.4,0,.2,1);
+  --focus-ring:0 0 0 3px rgba(140,29,64,.28);
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:radial-gradient(circle at 10% -20%,#FFF9ED 0%,var(--bg) 55%);color:var(--text);min-height:100vh;}
+a{color:var(--asu-maroon);text-decoration:none;transition:color var(--transition);}
+a:hover{color:var(--asu-maroon-dark);}
+a:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-sm);}
+
+.top-nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid rgba(140,29,64,.12);padding:14px clamp(16px,4vw,40px);display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1rem;color:var(--asu-maroon);letter-spacing:.02em;}
+.brand-badge{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--asu-maroon);color:var(--asu-gold);font-weight:800;box-shadow:var(--shadow-sm);}
+.nav-links{display:flex;align-items:center;gap:12px;}
+.nav-link{padding:10px 16px;border-radius:999px;color:var(--text);font-weight:600;transition:background var(--transition),color var(--transition),transform var(--transition);}
+.nav-link:hover{background:rgba(140,29,64,.08);}
+.nav-link.is-active{background:var(--asu-maroon);color:#fff;}
+.nav-link.is-disabled{color:var(--muted);pointer-events:none;opacity:.55;}
+
+main.page{max-width:960px;margin:0 auto;padding:clamp(20px,4vw,48px);display:flex;flex-direction:column;gap:24px;}
+.breadcrumb{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--asu-maroon);font-size:.9rem;}
+
+.detail-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:clamp(24px,4vw,36px);display:grid;gap:32px;grid-template-columns:minmax(0,320px) minmax(0,1fr);border:1px solid var(--border);}
+.cover-frame{background:linear-gradient(160deg,rgba(140,29,64,.12),rgba(255,198,39,.16));border-radius:var(--radius);padding:18px;display:flex;justify-content:center;align-items:center;min-height:420px;}
+.cover-frame img{width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);box-shadow:0 18px 48px rgba(16,14,12,.18);background:#fff;}
+.detail-meta{display:flex;flex-direction:column;gap:18px;}
+.detail-meta h1{font-size:2rem;font-weight:800;color:var(--text);}
+.detail-meta .muted{color:var(--muted);}
+.price-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.price-chip{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:999px;background:var(--asu-maroon);color:#fff;font-weight:700;font-size:1rem;}
+.status-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;background:rgba(140,29,64,.12);color:var(--asu-maroon);font-weight:600;font-size:.9rem;}
+.chip-group{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;background:rgba(255,198,39,.22);color:var(--asu-maroon);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;}
+.description{line-height:1.6;font-size:.95rem;background:rgba(140,29,64,.04);border-radius:var(--radius-sm);padding:16px;}
+.actions{display:flex;flex-wrap:wrap;gap:12px;}
+.listing-id{font-size:.85rem;color:var(--muted);border-top:1px solid rgba(27,27,31,.12);padding-top:12px;}
+.meta-line{font-size:.88rem;}
+.small{font-size:.85rem;}
+.isbn-line,.edition-line{font-size:.9rem;}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 24px;border-radius:999px;font-weight:700;font-size:.95rem;border:1px solid transparent;background:var(--asu-maroon);color:#fff;cursor:pointer;transition:transform var(--transition),box-shadow var(--transition),background var(--transition);text-decoration:none;}
+.btn:hover{transform:translateY(-1px);background:var(--asu-maroon-dark);}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring);}
+.btn-outline{background:transparent;border:2px solid rgba(140,29,64,.4);color:var(--asu-maroon);} 
+.btn-outline:hover{background:rgba(140,29,64,.08);} 
+.btn-ghost{background:rgba(140,29,64,.12);color:var(--asu-maroon);} 
+.btn-ghost:hover{background:rgba(140,29,64,.2);} 
+
+.status-meetup{background:rgba(255,198,39,.25);color:var(--asu-maroon);}
+
+#toastContainer{position:fixed;top:24px;right:24px;z-index:90;display:flex;flex-direction:column;gap:12px;}
+.toast{background:var(--asu-maroon);color:#fff;padding:12px 16px;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);font-weight:600;opacity:0;transform:translateY(0);transition:opacity var(--transition),transform var(--transition);} 
+.toast.err{background:#9E1F35;}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(18,16,14,.55);display:none;align-items:center;justify-content:center;padding:24px;z-index:80;} 
+.modal-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:min(420px,95vw);display:flex;flex-direction:column;} 
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid rgba(27,27,31,.14);} 
+.modal-header h2{margin:0;font-size:1.25rem;} 
+.modal-close{border:none;background:transparent;font-size:1.4rem;cursor:pointer;color:var(--muted);} 
+.modal-close:hover{color:var(--asu-maroon);} 
+.modal-body{display:flex;flex-direction:column;gap:16px;padding:20px 24px;} 
+.field{display:flex;flex-direction:column;gap:6px;} 
+.field span{font-weight:600;font-size:.85rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;} 
+.field select,.field input{padding:10px 12px;border-radius:var(--radius-sm);border:1px solid rgba(27,27,31,.18);background:#fff;font-size:.95rem;} 
+.field select:focus,.field input:focus{outline:none;border-color:var(--asu-maroon);box-shadow:var(--focus-ring);} 
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+
+@media (max-width:900px){
+  .detail-card{grid-template-columns:minmax(0,1fr);}
+  .cover-frame{min-height:360px;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important;}
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+<header class="top-nav">
+  <div class="nav-brand" aria-label="SunDevil Books">
+    <span class="brand-badge" aria-hidden="true">ASU</span>
+    <span class="brand-text">SunDevil Books</span>
+  </div>
+  <nav class="nav-links" aria-label="Primary navigation">
+    <a class="nav-link is-active" href="marketplace.html">Marketplace</a>
+    <a class="nav-link" href="auto-list.html">Auto-List (Photo)</a>
+    <a class="nav-link" href="my-listings.html">My Listings</a>
+    <a class="nav-link is-disabled" href="#" aria-disabled="true">Login</a>
+  </nav>
+</header>
+
+<main class="page">
+  <a href="marketplace.html" class="breadcrumb">← Back to Marketplace</a>
+  <section class="detail-card">
+    <div class="cover-frame">
+      <img id="img" alt="Book cover" src="" loading="lazy" />
+    </div>
+    <div class="detail-meta">
+      <h1 id="title">—</h1>
+      <p id="author" class="muted">—</p>
+      <div class="price-row">
+        <span id="price" class="price-chip">$—</span>
+        <span id="status" class="status-chip">Status: —</span>
+        <span id="meetupPill" class="status-chip status-meetup" style="display:none"></span>
+      </div>
+      <div id="courseChips" class="chip-group" aria-label="Course codes"></div>
+      <p id="isbn" class="muted isbn-line">ISBN —</p>
+      <p id="edition" class="muted edition-line"></p>
+      <p id="postedMeta" class="muted meta-line"></p>
+      <div id="description" class="description muted"></div>
+      <div class="actions">
+        <a id="mailto" class="btn">Contact seller</a>
+        <button id="meetupBtn" class="btn btn-outline" type="button">Propose meetup</button>
+      </div>
+      <div class="listing-id">Listing ID: <span id="id">—</span></div>
+    </div>
+  </section>
+</main>
+
+<div id="toastContainer" aria-live="polite"></div>
+
+<div id="meetupModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="meetupTitle">
+  <div class="modal-card">
+    <header class="modal-header">
+      <h2 id="meetupTitle">Propose meetup</h2>
+      <button id="closeModal" class="modal-close" aria-label="Close meetup dialog">×</button>
+    </header>
+    <form id="meetupForm" class="modal-body">
+      <label class="field">
+        <span>Spot</span>
+        <select id="meetupSpot" required>
+          <option value="">Select a meetup spot</option>
+          <option>Hayden Library Lobby</option>
+          <option>MU Starbucks</option>
+          <option>Student Services Lawn</option>
+          <option>Polytechnic Student Union Desk</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Date</span>
+        <input id="meetupDate" type="date" required />
+      </label>
+      <label class="field">
+        <span>Time</span>
+        <input id="meetupTime" type="time" required />
+      </label>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Submit request</button>
+        <button type="button" id="cancelModal" class="btn btn-ghost">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDa8jBTAxpNw_01cYdke_IQqAS7dh83d6k",
+  authDomain: "asu-textbook-marketplace.firebaseapp.com",
+  projectId: "asu-textbook-marketplace",
+  storageBucket: "asu-textbook-marketplace.appspot.com",
+  messagingSenderId: "275260067181",
+  appId: "1:275260067181:web:2abd6a3f46f484bad69e64",
+  measurementId: "G-PG98RMLS6V"
+};
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+const params = new URLSearchParams(location.search);
+
+const meetupBtn = document.getElementById('meetupBtn');
+if (meetupBtn) meetupBtn.disabled = true;
+
+const listingId = params.get('id') || '';
+const idEl = document.getElementById('id');
+const titleEl = document.getElementById('title');
+const authorEl = document.getElementById('author');
+const isbnEl = document.getElementById('isbn');
+const priceEl = document.getElementById('price');
+const editionEl = document.getElementById('edition');
+const statusEl = document.getElementById('status');
+const postedEl = document.getElementById('postedMeta');
+const descriptionEl = document.getElementById('description');
+const courseEl = document.getElementById('courseChips');
+const mailEl = document.getElementById('mailto');
+const imgEl = document.getElementById('img');
+const meetupModal = document.getElementById('meetupModal');
+const meetupForm = document.getElementById('meetupForm');
+const meetupSpot = document.getElementById('meetupSpot');
+const meetupDate = document.getElementById('meetupDate');
+const meetupTime = document.getElementById('meetupTime');
+const closeModalBtn = document.getElementById('closeModal');
+const cancelModalBtn = document.getElementById('cancelModal');
+const meetupPill = document.getElementById('meetupPill');
+const toastContainer = document.getElementById('toastContainer');
+
+let authUser = null;
+let currentListing = null;
+
+auth.onAuthStateChanged(user => {
+  authUser = user;
+  updateMeetupButtonState();
+});
+
+idEl.textContent = listingId || '—';
+document.title = listingId ? `Listing • ${listingId}` : 'Listing • SunDevil Marketplace';
+
+function toast(message, type='ok') {
+  const el = document.createElement('div');
+  el.className = 'toast' + (type === 'err' ? ' err' : '');
+  el.textContent = message;
+  toastContainer.appendChild(el);
+  requestAnimationFrame(() => { el.style.opacity = '1'; });
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-8px)';
+    setTimeout(() => el.remove(), 220);
+  }, 2600);
+}
+
+function normalizeCourses(input){
+  if (!input) return [];
+  if (Array.isArray(input)) return input.map(v => String(v).trim()).filter(Boolean);
+  return String(input).split(',').map(v => v.trim()).filter(Boolean);
+}
+
+function placeholderImage(title){
+  const text = encodeURIComponent(title || 'No Image');
+  return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='820'><rect width='100%' height='100%' rx='32' fill='%23f6f1ea'/><text x='50%' y='50%' fill='%238c1d40' font-size='32' font-family='Inter, sans-serif' font-weight='600' text-anchor='middle'>${text}</text></svg>`;
+}
+
+function showMeetupStatus(status){
+  if (!meetupPill) return;
+  if (status === 'pending_meetup'){
+    meetupPill.style.display = 'inline-flex';
+    meetupPill.textContent = 'Meetup pending';
+  } else if (status === 'meetup_set') {
+    meetupPill.style.display = 'inline-flex';
+    meetupPill.textContent = 'Meetup set';
+  } else {
+    meetupPill.style.display = 'none';
+  }
+}
+
+function updateMeetupButtonState(){
+  if (!meetupBtn) return;
+  if (!currentListing || !currentListing.ownerUid){
+    meetupBtn.disabled = true;
+    return;
+  }
+  if (authUser && authUser.uid === currentListing.ownerUid){
+    meetupBtn.disabled = true;
+    meetupBtn.title = 'You already own this listing';
+  } else {
+    meetupBtn.disabled = false;
+    meetupBtn.removeAttribute('title');
+  }
+}
+
+(function load(){
+  if (!listingId){
+    titleEl.textContent = 'Listing not specified';
+    return;
+  }
+  db.collection('listings').doc(listingId).get().then(snap => {
+    if (!snap.exists){
+      titleEl.textContent = 'Listing not found';
+      return;
+    }
+    const doc = snap.data();
+    titleEl.textContent = doc.title || 'Untitled';
+    document.title = `${titleEl.textContent} • SunDevil Marketplace`;
+    authorEl.textContent = doc.author ? `by ${doc.author}` : '—';
+    isbnEl.textContent = doc.isbn ? `ISBN ${doc.isbn}` : 'ISBN —';
+    priceEl.textContent = '$' + Number(doc.price || 0).toFixed(2);
+    editionEl.textContent = doc.edition || '';
+    statusEl.textContent = 'Status: ' + (doc.status || 'active');
+    showMeetupStatus(doc.status);
+
+    const courses = normalizeCourses(doc.courseCodes);
+    courseEl.innerHTML = '';
+    (courses.length ? courses : ['General']).forEach(code => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = code;
+      courseEl.appendChild(chip);
+    });
+
+    let createdMs = null;
+    if (doc.createdAt && typeof doc.createdAt.toMillis === 'function'){
+      try { createdMs = doc.createdAt.toMillis(); } catch { createdMs = Date.now(); }
+    } else if (typeof doc.createdAt === 'number') {
+      createdMs = doc.createdAt;
+    }
+    const parts = [];
+    if (createdMs){
+      const d = new Date(createdMs);
+      if (!isNaN(d)) parts.push('Posted on ' + d.toLocaleDateString(undefined,{ month:'short', day:'numeric', year:'numeric' }));
+    }
+    if (courses.length) parts.push(courses.join(', '));
+    postedEl.textContent = parts.join(' • ');
+    postedEl.style.display = parts.length ? 'block' : 'none';
+
+    const text = doc.description && doc.description.trim ? doc.description.trim() : (doc.description || '');
+    descriptionEl.textContent = text || 'No description added yet.';
+
+    const src = doc.imageUrl || placeholderImage(doc.title);
+    imgEl.src = src;
+    imgEl.alt = doc.title || 'Book cover';
+
+    if (doc.ownerEmail) {
+      const subject = encodeURIComponent('Interested in ' + (doc.title || 'your listing'));
+      const body = encodeURIComponent('Hi,
+
+I saw your listing for "' + (doc.title || '') + '". Is it still available?
+Listing ID: ' + listingId + '
+
+Thanks.');
+      mailEl.href = 'mailto:' + encodeURIComponent(doc.ownerEmail) + '?subject=' + subject + '&body=' + body;
+      mailEl.textContent = 'Contact seller';
+    } else {
+      mailEl.textContent = 'Copy share link';
+      mailEl.removeAttribute('href');
+      mailEl.onclick = () => navigator.clipboard.writeText(location.href);
+    }
+
+    currentListing = {
+      id: listingId,
+      ownerUid: doc.ownerUid || null,
+      title: doc.title || 'Listing',
+      status: doc.status || 'active'
+    };
+    updateMeetupButtonState();
+  }).catch(err => {
+    console.error(err);
+    titleEl.textContent = 'Error loading listing';
+  });
+})();
+
+function openModal(){
+  meetupForm.reset();
+  meetupModal.style.display = 'flex';
+  meetupSpot.focus();
+}
+
+function closeModal(){
+  meetupModal.style.display = 'none';
+}
+
+if (meetupBtn){
+  meetupBtn.addEventListener('click', () => {
+    if (!currentListing) return;
+    if (!authUser){
+      window.location.href = 'login.html';
+      return;
+    }
+    if (authUser.uid === currentListing.ownerUid){
+      toast('You already own this listing','err');
+      return;
+    }
+    openModal();
+  });
+}
+
+if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+
+if (meetupForm){
+meetupForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  if (!authUser){
+    window.location.href = 'login.html';
+    return;
+  }
+  if (!currentListing || !currentListing.ownerUid){
+    toast('Listing unavailable','err');
+    return;
+  }
+  const spot = meetupSpot.value;
+  const date = meetupDate.value;
+  const time = meetupTime.value;
+  if (!spot || !date || !time){
+    toast('All fields required','err');
+    return;
+  }
+  const localDate = new Date(`${date}T${time}`);
+  if (isNaN(localDate.getTime())){
+    toast('Invalid date or time','err');
+    return;
+  }
+  const timeISO = new Date(localDate.getTime()).toISOString();
+  try {
+    const docRef = db.collection('meetups').doc();
+    await docRef.set({
+      id: docRef.id,
+      listingId: currentListing.id,
+      buyerUid: authUser.uid,
+      sellerUid: currentListing.ownerUid,
+      spot,
+      timeISO,
+      status: 'proposed',
+      createdAt: Date.now()
+    });
+    await db.collection('listings').doc(currentListing.id).update({ status: 'pending_meetup' });
+    toast('Meetup request sent');
+    closeModal();
+    currentListing.status = 'pending_meetup';
+    statusEl.textContent = 'Status: pending_meetup';
+    showMeetupStatus('pending_meetup');
+  } catch (err) {
+    console.error(err);
+    toast('Failed to create meetup','err');
+  }
+});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SunDevil Marketplace</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --asu-maroon:#8C1D40;
+      --asu-maroon-dark:#5A1028;
+      --asu-gold:#FFC627;
+      --accent-green:#1F8A3E;
+      --bg:#F6F4F2;
+      --surface:#FBF8F4;
+      --card:#FFFFFF;
+      --text:#1B1C1F;
+      --muted:#5F646E;
+      --border:rgba(27,27,31,.12);
+      --shadow-sm:0 14px 28px rgba(18,16,14,.08);
+      --shadow-lg:0 32px 80px rgba(16,14,12,.18);
+      --radius:18px;
+      --radius-sm:12px;
+      --transition:220ms cubic-bezier(.4,0,.2,1);
+      --focus-ring:0 0 0 3px rgba(140,29,64,.28);
+      --green-700:var(--asu-maroon);
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:radial-gradient(circle at 20% -10%,#FFF9ED 0%,var(--bg) 60%);color:var(--text);min-height:100vh;}
+    a{color:var(--asu-maroon);text-decoration:none;transition:color var(--transition);}
+    a:hover{color:var(--asu-maroon-dark);}
+    a:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-sm);}
+    h1,h2,h3{margin:0;font-weight:700;color:var(--text);}
+    p{margin:0;}
+
+    .top-nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.94);backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid rgba(140,29,64,.12);padding:14px clamp(16px,4vw,40px);display:flex;align-items:center;justify-content:space-between;}
+    .nav-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1rem;color:var(--asu-maroon);letter-spacing:.02em;}
+    .brand-badge{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--asu-maroon);color:var(--asu-gold);font-weight:800;box-shadow:var(--shadow-sm);}
+    .nav-links{display:flex;align-items:center;gap:12px;}
+    .nav-link{padding:10px 16px;border-radius:999px;color:var(--text);font-weight:600;transition:background var(--transition),color var(--transition),transform var(--transition);}
+    .nav-link:hover{background:rgba(140,29,64,.08);}
+    .nav-link.is-active{background:var(--asu-maroon);color:#fff;}
+    .nav-link.is-disabled{color:var(--muted);pointer-events:none;opacity:.55;}
+
+    main.page{padding:clamp(20px,4vw,48px);padding-top:32px;max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:32px;}
+    .hero{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;background:var(--card);border-radius:var(--radius);padding:clamp(20px,4vw,36px);box-shadow:var(--shadow-lg);border:1px solid var(--border);position:relative;overflow:hidden;}
+    .hero::after{content:"";position:absolute;right:-120px;top:-80px;width:240px;height:240px;border-radius:50%;background:linear-gradient(160deg,rgba(255,198,39,.28),rgba(140,29,64,.16));pointer-events:none;}
+    .hero-copy{max-width:520px;display:flex;flex-direction:column;gap:14px;}
+    .eyebrow{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--asu-maroon);}
+    .hero p{color:var(--muted);font-size:1rem;}
+    .live-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(140,29,64,.12);color:var(--asu-maroon);font-weight:600;font-size:.9rem;}
+
+    .content-grid{display:grid;gap:24px;grid-template-columns:minmax(0,420px) minmax(0,1fr);align-items:start;}
+    .card{background:var(--card);border-radius:var(--radius);padding:clamp(18px,3vw,28px);box-shadow:var(--shadow-sm);border:1px solid var(--border);}
+    .form-panel h2,.info-panel h2{font-size:1.2rem;margin-bottom:12px;color:var(--asu-maroon);}
+    .form-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+    .field{display:flex;flex-direction:column;gap:8px;}
+    .field span{font-weight:600;color:var(--muted);font-size:.85rem;letter-spacing:.02em;text-transform:uppercase;}
+    .span-2{grid-column:span 2;}
+    .form-panel input,.form-panel textarea,.form-panel select{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid rgba(27,27,31,.18);background:#fff;font-size:.95rem;color:var(--text);transition:border-color var(--transition),box-shadow var(--transition);}
+    .form-panel input:focus,.form-panel textarea:focus,.form-panel select:focus{outline:none;border-color:var(--asu-maroon);box-shadow:var(--focus-ring);}
+    .form-panel textarea{min-height:120px;resize:vertical;}
+    .preview{height:160px;border-radius:var(--radius-sm);border:1px dashed rgba(140,29,64,.35);background:linear-gradient(160deg,rgba(140,29,64,.04),rgba(255,198,39,.08));display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:600;overflow:hidden;}
+    .preview img{width:100%;height:100%;object-fit:cover;}
+    input[type='file']{padding:10px;border:1px dashed rgba(27,27,31,.2);border-radius:var(--radius-sm);background:rgba(140,29,64,.05);cursor:pointer;}
+    input[type='file']::file-selector-button{margin-right:12px;border:0;background:var(--asu-maroon);color:#fff;padding:8px 14px;border-radius:999px;font-weight:600;cursor:pointer;transition:background var(--transition);}
+    input[type='file']::file-selector-button:hover{background:var(--asu-maroon-dark);}
+
+    .form-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;}
+    .form-panel .muted{font-size:.85rem;}
+
+    .info-panel{display:flex;flex-direction:column;gap:14px;}
+    .info-panel p{color:var(--muted);line-height:1.45;}
+    .info-list{margin:0;padding-left:22px;display:grid;gap:10px;color:var(--muted);font-size:.95rem;}
+
+    .feed-panel{display:flex;flex-direction:column;gap:18px;}
+    .search-stack{display:flex;flex-direction:column;gap:14px;}
+    .searchbar{display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:999px;border:1px solid rgba(27,27,31,.12);background:var(--card);box-shadow:0 16px 32px rgba(18,16,14,.08);}
+    .search-icon{display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;color:var(--muted);}
+    .searchbar input{flex:1;border:0;background:transparent;font-size:.95rem;color:var(--text);}
+    .searchbar input:focus{outline:none;}
+    .count-pill{padding:6px 12px;border-radius:999px;background:rgba(140,29,64,.12);color:var(--asu-maroon);font-weight:600;font-size:.85rem;}
+
+    .filter-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+    .filter-bar select,
+    .filter-bar input{padding:10px 14px;border-radius:var(--radius-sm);border:1px solid rgba(27,27,31,.18);background:rgba(255,255,255,.92);font-size:.9rem;color:var(--text);}
+    .filter-bar select:focus,
+    .filter-bar input:focus{outline:none;border-color:var(--asu-maroon);box-shadow:var(--focus-ring);}
+
+    #status{font-size:.88rem;color:var(--muted);}
+
+    #feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
+    #feed .card{display:grid;grid-template-columns:108px minmax(0,1fr);gap:18px;padding:18px;border-radius:var(--radius);background:linear-gradient(160deg,#fff,rgba(255,198,39,.08));border:1px solid rgba(27,27,31,.1);box-shadow:0 16px 32px rgba(16,14,12,.08);cursor:pointer;transition:transform var(--transition),box-shadow var(--transition);}
+    #feed .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+    .thumb{width:100%;height:152px;border-radius:var(--radius-sm);object-fit:cover;background:rgba(140,29,64,.08);}
+    .card-meta{display:flex;flex-direction:column;gap:10px;min-width:0;}
+    .card-title{font-weight:700;font-size:1.05rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .price{font-weight:800;color:var(--asu-maroon);}
+    .tag{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(255,198,39,.2);color:var(--asu-maroon);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;}
+    .card-desc{color:var(--muted);font-size:.9rem;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+    .card-bottom{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;}
+    .seller{font-size:.85rem;color:var(--muted);}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+    .skeleton{height:200px;border-radius:var(--radius);background:linear-gradient(90deg,rgba(140,29,64,.08),rgba(255,198,39,.12),rgba(140,29,64,.08));animation:shimmer 1.3s linear infinite;}
+    @keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
+    .empty{padding:52px;border-radius:var(--radius);text-align:center;color:var(--muted);background:rgba(255,255,255,.6);border:1px dashed rgba(140,29,64,.2);}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border-radius:999px;font-weight:700;font-size:.95rem;border:1px solid transparent;background:rgba(140,29,64,.05);color:var(--text);cursor:pointer;transition:transform var(--transition),box-shadow var(--transition),background var(--transition),border-color var(--transition);}
+    .btn:hover{transform:translateY(-1px);}
+    .btn:focus-visible{outline:none;box-shadow:var(--focus-ring);}
+    .btn.primary{background:var(--asu-maroon);color:#fff;border-color:var(--asu-maroon);}
+    .btn.primary:hover{background:var(--asu-maroon-dark);}
+    .btn.ghost{background:transparent;color:var(--asu-maroon);border-color:rgba(140,29,64,.28);}
+    .btn.ghost:hover{background:rgba(140,29,64,.08);}
+    .btn.outline{background:transparent;color:var(--asu-maroon);border-color:rgba(140,29,64,.45);}
+    .btn.outline:hover{background:rgba(140,29,64,.08);}
+    .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none;}
+
+    .toast{position:fixed;top:24px;right:24px;z-index:1500;background:var(--asu-maroon);color:#fff;padding:14px 18px;border-radius:var(--radius-sm);box-shadow:0 18px 40px rgba(18,16,14,.2);font-weight:600;transition:opacity var(--transition),transform var(--transition);}
+
+    .modal-backdrop{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(24,20,18,.5);display:flex;align-items:center;justify-content:center;z-index:1300;padding:20px;}
+    .chat-modal{width:720px;max-width:100%;height:520px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(27,27,31,.12);}
+    .chat-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(27,27,31,.12);background:linear-gradient(90deg,rgba(140,29,64,.08),rgba(255,198,39,.08));}
+    .chat-header strong{font-size:1rem;color:var(--asu-maroon);}
+    .chat-body{flex:1;padding:20px;overflow:auto;display:flex;flex-direction:column;gap:12px;background:var(--surface);}
+    .msg-row{display:flex;gap:10px;align-items:flex-end;}
+    .msg{max-width:72%;padding:12px 14px;border-radius:16px;background:#fff;border:1px solid rgba(27,27,31,.08);font-size:.92rem;line-height:1.4;color:var(--text);box-shadow:0 8px 18px rgba(18,16,14,.08);}
+    .msg.me{margin-left:auto;background:linear-gradient(140deg,rgba(140,29,64,.9),rgba(140,29,64,.75));color:#fff;border:0;}
+    .chat-input{padding:16px 20px;border-top:1px solid rgba(27,27,31,.12);display:flex;gap:12px;background:var(--card);}
+    .chat-input textarea{flex:1;resize:none;border:1px solid rgba(27,27,31,.18);border-radius:var(--radius-sm);padding:12px 14px;font-size:.95rem;font-family:'Inter',sans-serif;color:var(--text);min-height:48px;transition:border-color var(--transition),box-shadow var(--transition);}
+    .chat-input textarea:focus{outline:none;border-color:var(--asu-maroon);box-shadow:var(--focus-ring);}
+
+    #toastContainer{position:fixed;top:24px;right:24px;z-index:1500;display:flex;flex-direction:column;gap:10px;}
+
+    @media (max-width:1080px){
+      .content-grid{grid-template-columns:minmax(0,1fr);}
+      .form-grid{grid-template-columns:minmax(0,1fr);}
+      .span-2{grid-column:auto;}
+    }
+
+    @media (max-width:720px){
+      .top-nav{padding-inline:18px;}
+      .hero{padding:24px;}
+      main.page{padding-inline:18px;}
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{transition:none!important;animation:none!important;}
+    }
+  </style>
+</head>
+<body>
+<header class="top-nav">
+  <div class="nav-brand" aria-label="SunDevil Books">
+    <span class="brand-badge" aria-hidden="true">ASU</span>
+    <span class="brand-text">SunDevil Books</span>
+  </div>
+  <nav class="nav-links" aria-label="Primary navigation">
+    <a class="nav-link is-active" href="marketplace.html">Marketplace</a>
+    <a class="nav-link" href="auto-list.html">Auto-List (Photo)</a>
+    <a class="nav-link" href="my-listings.html">My Listings</a>
+    <a class="nav-link is-disabled" href="#" aria-disabled="true">Login</a>
+  </nav>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Arizona State University</span>
+      <h1>SunDevil Marketplace</h1>
+      <p>Discover, list, and swap textbooks with classmates across ASU campuses.</p>
+      <div class="live-chip">Live • <span id="liveCount">—</span></div>
+    </div>
+    <button id="whoamiBtn" class="btn ghost" type="button">Identify me</button>
+  </section>
+
+  <div class="content-grid">
+    <aside class="form-panel card">
+      <h2>Post a listing</h2>
+      <form id="postForm" autocomplete="off">
+        <div class="form-grid">
+          <div class="field span-2">
+            <span>Title</span>
+            <input id="title" placeholder="Intro to Psychology (7th Edition)" />
+          </div>
+          <div class="field span-2">
+            <span>Description</span>
+            <textarea id="description" placeholder="Condition, highlights, extras, and meetup details"></textarea>
+          </div>
+          <div class="field">
+            <span>Price (USD)</span>
+            <input id="price" type="number" min="0" step="1" placeholder="25" />
+          </div>
+          <div class="field">
+            <span>Condition</span>
+            <select id="condition">
+              <option>Like New</option>
+              <option>Good</option>
+              <option>Fair</option>
+            </select>
+          </div>
+          <div class="field">
+            <span>Course codes</span>
+            <input id="courseCodes" placeholder="CSE110, MAT265" />
+          </div>
+          <div class="field">
+            <span>Edition</span>
+            <input id="edition" placeholder="8th" />
+          </div>
+          <div class="field">
+            <span>ISBN</span>
+            <input id="isbn" placeholder="9780134093413" />
+          </div>
+          <div class="field">
+            <span>Your name</span>
+            <input id="ownerName" placeholder="Sparky SunDevil" />
+          </div>
+          <div class="field">
+            <span>Your email</span>
+            <input id="ownerEmail" type="email" placeholder="sparky@asu.edu" />
+          </div>
+          <div class="field span-2">
+            <span>Image (optional)</span>
+            <input id="imageFile" type="file" accept="image/*" />
+            <div id="preview" class="preview">No image selected</div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button id="postBtn" class="btn primary" type="button">Post Listing</button>
+          <button id="seedBtn" class="btn ghost" type="button">Seed demo</button>
+          <button id="clearBtn" class="btn ghost" type="button">Clear</button>
+        </div>
+        <div id="formStatus" class="muted">Demo mode — no enforced auth yet.</div>
+      </form>
+    </aside>
+
+    <aside class="info-panel card">
+      <h2>How it works</h2>
+      <p>Share high-quality listings so fellow Sun Devils can prep for class faster.</p>
+      <ul class="info-list">
+        <li>List in seconds: add a strong title, quick description, and a fair price.</li>
+        <li>Include course codes to help classmates find exactly what they need.</li>
+        <li>Messages arrive in real time so you can coordinate pickups instantly.</li>
+      </ul>
+    </aside>
+  </div>
+
+  <section class="feed-panel card" aria-labelledby="feedHeading">
+    <div class="search-stack">
+      <div class="searchbar" role="search">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input id="globalSearch" placeholder="Search title, ISBN, course, or token" />
+        <div id="countPill" class="count-pill">—</div>
+      </div>
+      <div class="filter-bar">
+        <select id="filterCourse">
+          <option value="">All courses</option>
+          <option>CSE110</option>
+          <option>CSE205</option>
+          <option>MAT265</option>
+          <option>PHY111</option>
+          <option>ENG101</option>
+        </select>
+        <input id="filterMin" type="number" placeholder="Min $" />
+        <input id="filterMax" type="number" placeholder="Max $" />
+        <button id="clearFilters" class="btn ghost" type="button">Clear filters</button>
+        <button id="refreshBtn" class="btn ghost" type="button">Refresh</button>
+      </div>
+    </div>
+    <p id="status">Connecting…</p>
+    <section id="feed" class="feed" aria-live="polite"></section>
+  </section>
+</main>
+
+<!-- Chat modal (hidden by default) -->
+<div id="chatModalRoot" style="display:none"></div>
+
+<!-- toast container -->
+<div id="toastContainer" aria-live="polite"></div>
+
+  <!-- Firebase compat libs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <script>
+  (function(){
+    // ---------------- CONFIG ----------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyDa8jBTAxpNw_01cYdke_IQqAS7dh83d6k",
+      authDomain: "asu-textbook-marketplace.firebaseapp.com",
+      projectId: "asu-textbook-marketplace",
+      storageBucket: "asu-textbook-marketplace.appspot.com",
+      messagingSenderId: "275260067181",
+      appId: "1:275260067181:web:2abd6a3f46f484bad69e64",
+      measurementId: "G-PG98RMLS6V"
+    };
+    if (!firebaseConfig || firebaseConfig.apiKey === "REPLACE_ME") console.warn('Replace firebaseConfig');
+
+    // Init
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+    const auth = firebase.auth ? firebase.auth() : null;
+    try { firebase.auth().signInAnonymously().catch(()=>{}); } catch(_) {}
+
+    // DOM refs
+    const feed = document.getElementById('feed');
+    const liveCount = document.getElementById('liveCount');
+    const countPill = document.getElementById('countPill');
+    const statusEl = document.getElementById('status');
+    const toastContainer = document.getElementById('toastContainer');
+    const chatRoot = document.getElementById('chatModalRoot');
+
+    // Form refs
+    const titleEl = document.getElementById('title');
+    const descEl = document.getElementById('description');
+    const priceEl = document.getElementById('price');
+    const courseEl = document.getElementById('courseCodes');
+    const editionEl = document.getElementById('edition');
+    const conditionEl = document.getElementById('condition');
+    const isbnEl = document.getElementById('isbn');
+    const ownerNameEl = document.getElementById('ownerName');
+    const ownerEmailEl = document.getElementById('ownerEmail');
+    const imageFileEl = document.getElementById('imageFile');
+    const previewEl = document.getElementById('preview');
+    const postBtn = document.getElementById('postBtn');
+    const seedBtn = document.getElementById('seedBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const formStatus = document.getElementById('formStatus');
+
+    const globalSearch = document.getElementById('globalSearch');
+    const filterCourse = document.getElementById('filterCourse');
+    const filterMin = document.getElementById('filterMin');
+    const filterMax = document.getElementById('filterMax');
+    const clearFilters = document.getElementById('clearFilters');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const whoamiBtn = document.getElementById('whoamiBtn');
+
+    // in-memory
+    let allListings = [];
+    let filtered = [];
+    let unsubSnapshot = null;
+
+    // helpers
+    function esc(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+    function toast(msg, opts={type:'ok',timeout:3200}) {
+      const el=document.createElement('div');el.className='toast';el.textContent=msg;el.style.background=opts.type==='err' ? '#b84b4b' : 'var(--green-700)';toastContainer.appendChild(el);
+      setTimeout(()=>{el.style.opacity=0;el.style.transform='translateY(6px)';setTimeout(()=>el.remove(),420)},opts.timeout);
+    }
+    function nowMs(){return Date.now();}
+
+    // identity helpers: use firebase auth if signed in; else local anon user in localStorage
+    function getLocalIdentity(){
+      const raw = localStorage.getItem('gb_user');
+      if(!raw) return null;
+      try { return JSON.parse(raw); } catch(e){ return null; }
+    }
+    function setLocalIdentity(obj){ localStorage.setItem('gb_user', JSON.stringify(obj)); }
+    function ensureLocalIdentity(interactive=true){
+      // try firebase auth
+      try {
+        const u = auth && auth.currentUser;
+        if(u){ return { uid: u.uid, name: u.displayName || u.email || 'ASU User', email: u.email || '' }; }
+      } catch(e){ /*ignore*/ }
+      // else local
+      let id = getLocalIdentity();
+      if(id) return id;
+      if(!interactive) return null;
+      // prompt a small form modal to collect name & email
+      return promptForIdentity();
+    }
+
+    function promptForIdentity(){
+      return new Promise((resolve) => {
+        const modal = document.createElement('div'); modal.className='modal-backdrop';
+        modal.innerHTML = `
+          <div class="chat-modal" style="width:420px;max-width:94%">
+            <div class="chat-header"><strong>Identify yourself</strong></div>
+            <div class="identity-prompt" style="padding:12px">
+              <label>Your display name</label><input id="promptName" />
+              <label>Your email (optional)</label><input id="promptEmail" />
+              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+                <button id="cancelId" class="btn ghost">Cancel</button>
+                <button id="saveId" class="btn primary">Save</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        const inpName = modal.querySelector('#promptName');
+        const inpEmail = modal.querySelector('#promptEmail');
+        modal.querySelector('#saveId').addEventListener('click', () => {
+          const name = (inpName.value||'').trim() || ('anon'+Math.random().toString(36).slice(2,8));
+          const email = (inpEmail.value||'').trim();
+          const uid = 'anon-' + (Math.random().toString(36).slice(2,9));
+          const ident = { uid, name, email };
+          setLocalIdentity(ident);
+          modal.remove();
+          resolve(ident);
+        });
+        modal.querySelector('#cancelId').addEventListener('click', () => { modal.remove(); resolve(null); });
+      });
+    }
+
+    whoamiBtn.addEventListener('click', async () => {
+      const ident = await ensureLocalIdentity(true);
+      if(ident) toast('Identified as ' + ident.name);
+    });
+
+    // Build normalized searchKeys
+    function buildSearchKeys(obj){
+      const keys=[];
+      if(obj.title) keys.push(...String(obj.title).split(/\s+/).map(t=>t.replace(/[^\w]/g,'').toUpperCase()).filter(Boolean));
+      if(obj.courseCodes){ const codes = Array.isArray(obj.courseCodes)?obj.courseCodes:String(obj.courseCodes).split(','); codes.map(c=>String(c).trim().toUpperCase()).filter(Boolean).forEach(c=>keys.push(c)); }
+      if(obj.isbn) keys.push(String(obj.isbn).toUpperCase());
+      return Array.from(new Set(keys));
+    }
+
+    // Helper: convert file to Image object
+    async function fileToImage(file){
+      return new Promise((res, rej)=>{
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = ()=>{ URL.revokeObjectURL(url); res(img); };
+        img.onerror = (e)=>{ URL.revokeObjectURL(url); rej(e); };
+        img.src = url;
+      });
+    }
+    // Helper: draw Image to Canvas, maxDim px
+    function imageToCanvas(img, maxDim=1200){
+      const {naturalWidth:w, naturalHeight:h} = img;
+      if(!w || !h){ const c=document.createElement('canvas'); c.width=1; c.height=1; return c; }
+      const scale = Math.min(1, maxDim / Math.max(w,h));
+      const cw = Math.round(w*scale), ch = Math.round(h*scale);
+      const c = document.createElement('canvas'); c.width=cw; c.height=ch;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, cw, ch);
+      return c;
+    }
+    // upload image with owner path and 5MB guard (storage disabled: inline as Data URL)
+    async function uploadImageWithPath(file, ownerUid){
+      // Storage disabled: inline the image as a Data URL in Firestore
+      if(!file) return null;
+      if(file.size > 5*1024*1024){ toast('Max 5MB image',{type:'err'}); return null; }
+      const img = await fileToImage(file);
+      const canvas = imageToCanvas(img, 1200);
+      try { return canvas.toDataURL('image/jpeg', 0.85); }
+      catch(e){ console.warn('dataURL encode failed', e); throw new Error('Could not encode image'); }
+    }
+
+    // create card - Contact button opens chat modal
+    function createCard(item){
+      const image = item.imageUrl || (item.images && item.images[0]) || '';
+      const id = item.id;
+      const title = item.title || item.isbn || 'Untitled';
+      const sellerName = item.ownerName || item.ownerEmail || 'Seller';
+      const ownerEmail = item.ownerEmail || '';
+      const ownerUid = item.ownerUid || 'anon';
+
+      const card = document.createElement('div'); card.className='card';
+      const img = document.createElement('img'); img.className='thumb'; img.loading='lazy'; img.alt=title;
+      img.src = image || 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="220" height="280"><rect width="100%" height="100%" fill="%23f1fbf1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%239bbd9c" font-size="16">No Image</text></svg>');
+      const meta = document.createElement('div'); meta.className='card-meta';
+      const top = document.createElement('div'); top.className='card-top';
+      const titleEl = document.createElement('div'); titleEl.className='card-title'; titleEl.textContent = title;
+      const price = document.createElement('div'); price.className='price'; price.textContent = '$' + (Number.isFinite(Number(item.price))?Number(item.price).toFixed(2):'0.00');
+      top.appendChild(titleEl); top.appendChild(price);
+
+      const tag = document.createElement('div'); tag.className='tag'; tag.textContent = (item.courseCodes && item.courseCodes[0])||'General';
+      const desc = document.createElement('div'); desc.className='card-desc'; desc.textContent = item.description||'';
+      const bottom = document.createElement('div'); bottom.className='card-bottom';
+      const seller = document.createElement('div'); seller.className='seller'; seller.innerHTML = 'Seller: <strong>'+esc(sellerName)+'</strong>';
+
+      const actions = document.createElement('div'); actions.className='actions';
+      const contactBtn = document.createElement('button'); contactBtn.className='btn ghost'; contactBtn.textContent='Contact';
+      contactBtn.addEventListener('click', (ev)=>{ ev.stopPropagation(); openChatModal({listing: item}); });
+      const viewBtn = document.createElement('button'); viewBtn.className='btn primary'; viewBtn.textContent='View';
+      viewBtn.addEventListener('click', ev=>{ ev.stopPropagation(); openListingDetail(item.id); });
+
+      actions.appendChild(contactBtn); actions.appendChild(viewBtn);
+      bottom.appendChild(seller); bottom.appendChild(actions);
+      meta.appendChild(top); meta.appendChild(tag); meta.appendChild(desc); meta.appendChild(bottom);
+      card.appendChild(img); card.appendChild(meta);
+
+      // click card -> detail (existing placeholder)
+      card.addEventListener('click', ()=> openListingDetail(item.id));
+      return card;
+    }
+
+    function openListingDetail(id){ window.location.href = 'listing.html?id=' + encodeURIComponent(id); }
+
+    function renderSkeletons(){ feed.innerHTML=''; for(let i=0;i<6;i++){const s=document.createElement('div');s.className='skeleton';feed.appendChild(s);} }
+    function renderEmpty(){ feed.innerHTML=''; const e=document.createElement('div'); e.className='empty'; e.innerHTML='<div style="font-size:34px">📚</div><div style="margin-top:8px;font-weight:700">No listings</div><div style="color:var(--muted)">Try clearing filters or add a listing.</div>'; feed.appendChild(e); }
+    function renderGrid(list){ feed.innerHTML=''; list.forEach(it=>feed.appendChild(createCard(it))); }
+
+    // Filters
+    function applyFilters(){
+      if(!allListings) return;
+      const course=(filterCourse.value||'').trim();
+      const minP=filterMin.value?Number(filterMin.value):null;
+      const maxP=filterMax.value?Number(filterMax.value):null;
+      const s=(globalSearch.value||'').trim().toUpperCase();
+      const t0=performance.now();
+      filtered = allListings.filter(l=>{
+        if(course && (!l.courseCodes || !l.courseCodes.includes(course))) return false;
+        const p = Number(l.price); const price = Number.isFinite(p)?p:0;
+        if(minP!==null && price < minP) return false;
+        if(maxP!==null && price > maxP) return false;
+        if(s){
+          if(Array.isArray(l.searchKeys) && l.searchKeys.includes(s)) return true;
+          if((l.title||'').toUpperCase().includes(s)) return true;
+          if(String(l.isbn||'').toUpperCase().includes(s)) return true;
+          return false;
+        }
+        return true;
+      });
+      const t1=performance.now();
+      if(filtered.length===0) renderEmpty(); else renderGrid(filtered);
+      countPill.textContent = filtered.length + ' listing' + (filtered.length===1?'':'s');
+      statusEl.textContent = 'Updated • ' + Math.round(t1-t0) + ' ms';
+      liveCount.textContent = allListings.length;
+    }
+
+    // Convert createdAt to ms in snapshot
+    function startRealtimeFeed(){
+      if(unsubSnapshot) unsubSnapshot();
+      statusEl.textContent = 'Connecting…';
+      renderSkeletons();
+      try{
+        const q = db.collection('listings').where('status','==','active').orderBy('createdAt','desc').limit(300);
+        unsubSnapshot = q.onSnapshot(snap=>{
+          const arr=[];
+          snap.forEach(doc=>{
+            const d = doc.data(); d.id = doc.id;
+            if(d.createdAt && typeof d.createdAt.toMillis === 'function'){ try{ d.createdAt = d.createdAt.toMillis(); } catch(e){ d.createdAt = Date.now(); } }
+            else if(typeof d.createdAt !== 'number'){ d.createdAt = Date.now(); }
+            const p = Number(d.price); d.price = Number.isFinite(p)?p:0;
+            if(Array.isArray(d.searchKeys)) d.searchKeys = d.searchKeys.map(t=>String(t||'').toUpperCase());
+            if(d.courseCodes && typeof d.courseCodes === 'string') d.courseCodes = d.courseCodes.split(',').map(x=>x.trim()).filter(Boolean);
+            arr.push(d);
+          });
+          allListings = arr;
+          if(!allListings.length){ renderEmpty(); countPill.textContent='0 listings'; statusEl.textContent='No listings'; liveCount.textContent='0'; }
+          else { applyFilters(); statusEl.textContent = 'Live • ' + allListings.length + ' listings'; }
+        }, err=>{ console.error('snapshot err',err); statusEl.textContent = 'Live feed error (see console)';});
+      }catch(err){ console.error(err); statusEl.textContent = 'Could not start live feed'; }
+    }
+
+    // Clear form
+    function clearForm(){ document.getElementById('createForm').reset(); previewEl.innerHTML='No image selected'; previewEl.classList.add('muted'); }
+
+    imageFileEl.addEventListener('change', e=>{
+      const f = imageFileEl.files && imageFileEl.files[0];
+      if(!f){ previewEl.innerHTML='No image selected'; previewEl.classList.add('muted'); return; }
+      const url = URL.createObjectURL(f); previewEl.innerHTML=''; previewEl.classList.remove('muted'); const img=document.createElement('img'); img.src=url; previewEl.appendChild(img);
+    });
+
+    // Post listing (ownerUid, canonical imageUrl, stable path, 5MB guard)
+    postBtn.addEventListener('click', async ()=>{
+      const title = (titleEl.value||'').trim(); if(!title){ toast('Title required',{type:'err'}); return; }
+      postBtn.disabled=true; seedBtn.disabled=true; formStatus.textContent='Posting listing…';
+
+      try{
+        let currentUser = null;
+        try { if (auth && auth.currentUser) currentUser = auth.currentUser; } catch (_) {}
+        const ownerUid = (currentUser && currentUser.uid) ? currentUser.uid : 'u1';
+        const ownerNameResolved = currentUser
+          ? (currentUser.displayName || currentUser.email || 'Seller')
+          : ((ownerNameEl.value||'').trim() || (ownerEmailEl.value||'').trim() || 'Seller');
+        const ownerEmailResolved = currentUser ? (currentUser.email || '') : (ownerEmailEl.value||'').trim();
+        const file = imageFileEl.files && imageFileEl.files[0];
+        let imageUrl = null;
+        if(file){
+          if(file.size > 5*1024*1024){ toast('Max 5MB image',{type:'err'}); postBtn.disabled=false; seedBtn.disabled=false; return; }
+          formStatus.textContent='Uploading image…';
+          imageUrl = await uploadImageWithPath(file, ownerUid);
+        }
+
+        const courseCodes = (courseEl.value||'').split(',').map(x=>x.trim()).filter(Boolean);
+        const rawPrice = priceEl.value ? Number(priceEl.value) : 0; const priceVal = Number.isFinite(Number(rawPrice)) ? Number(rawPrice) : 0;
+
+        const listing = {
+          ownerUid,
+          title,
+          description: (descEl.value||'').trim(),
+          price: priceVal,
+          courseCodes,
+          edition: (editionEl.value||'').trim(),
+          condition: conditionEl.value,
+          isbn: (isbnEl.value||'').trim(),
+          ownerName: ownerNameResolved,
+          ownerEmail: ownerEmailResolved,
+          imageUrl: imageUrl || null,
+          images: imageUrl ? [imageUrl] : [],
+          status: 'active',
+          createdAt: Date.now()
+        };
+        listing.searchKeys = buildSearchKeys(listing);
+        await db.collection('listings').add(listing);
+        toast('Listing posted — appears in feed shortly');
+        clearForm();
+      }catch(err){ console.error(err); toast('Error posting listing',{type:'err'}); formStatus.textContent='Error posting listing'; }
+      finally{ postBtn.disabled=false; seedBtn.disabled=false; setTimeout(()=>formStatus.textContent='Demo mode — add Firebase Auth for security',2200); }
+    });
+
+    // Seed demo
+    seedBtn.addEventListener('click', async ()=>{
+      seedBtn.disabled=true; formStatus.textContent='Seeding demo...';
+      try{
+        const demo = {
+          ownerUid: 'u1',
+          title: 'Intro to Programming — Demo Copy',
+          description: 'Demo copy for testing chat & feed.',
+          price: Math.floor(Math.random()*24)+6,
+          courseCodes: ['CSE110'],
+          edition: '2nd',
+          condition: 'Good',
+          isbn: '9781234567890',
+          ownerName: 'Demo Seller',
+          ownerEmail: 'demo@asu.edu',
+          imageUrl: null, images: [],
+          status: 'active',
+          createdAt: Date.now()
+        };
+        demo.searchKeys = buildSearchKeys(demo);
+        await db.collection('listings').add(demo);
+        toast('Demo seeded');
+      }catch(e){ console.error(e); toast('Error seeding',{type:'err'}); }
+      finally{ seedBtn.disabled=false; setTimeout(()=>formStatus.textContent='Demo mode — add Firebase Auth for security',1500); }
+    });
+
+    clearBtn.addEventListener('click', ()=>{ clearForm(); toast('Form cleared'); });
+
+    // Filters wiring
+    let ftimer=null; function debounceFilters(){ if(ftimer) clearTimeout(ftimer); ftimer=setTimeout(applyFilters,120); }
+    filterCourse.addEventListener('change', applyFilters);
+    filterMin.addEventListener('input', debounceFilters);
+    filterMax.addEventListener('input', debounceFilters);
+    globalSearch.addEventListener('input', debounceFilters);
+    clearFilters.addEventListener('click', ()=>{ filterCourse.value=''; filterMin.value=''; filterMax.value=''; globalSearch.value=''; applyFilters(); toast('Filters cleared'); });
+
+    refreshBtn.addEventListener('click', ()=>{ if(unsubSnapshot) unsubSnapshot(); startRealtimeFeed(); toast('Feed refreshed'); });
+
+    // START
+    startRealtimeFeed();
+
+    // ------------------- CHAT IMPLEMENTATION -------------------
+    // Open chat modal for a given listing (object)
+    function openChatModal({listing}){
+      // create modal root
+      chatRoot.innerHTML = '';
+      chatRoot.style.display = 'block';
+      const modal = document.createElement('div'); modal.className='modal-backdrop';
+      const chatHtml = document.createElement('div'); chatHtml.className='chat-modal';
+
+      // header
+      const header = document.createElement('div'); header.className='chat-header';
+      header.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><strong>Chat about</strong><div style="font-weight:700">${esc(listing.title||listing.isbn||'Listing')}</div></div>
+                          <div><button id="closeChat" class="btn ghost">Close</button></div>`;
+      chatHtml.appendChild(header);
+
+      // body (messages)
+      const body = document.createElement('div'); body.className='chat-body';
+      chatHtml.appendChild(body);
+
+      // footer (input)
+      const footer = document.createElement('div'); footer.className='chat-input';
+      footer.innerHTML = `<textarea id="chatInput" placeholder="Write a message…"></textarea><button id="sendMsg" class="btn primary">Send</button>`;
+      chatHtml.appendChild(footer);
+
+      modal.appendChild(chatHtml);
+      chatRoot.appendChild(modal);
+
+      // close handler
+      modal.querySelector('#closeChat').addEventListener('click', ()=>{ cleanup(); });
+
+      // set up identity & message send
+      let localIdent = ensureLocalIdentity(false);
+      if(!localIdent && (!auth || !auth.currentUser)){
+        // ask interactively
+        ensureLocalIdentity(true).then(id=>{
+          localIdent = id || getLocalIdentity();
+        });
+      }
+
+      // message listener: subscribe to messages for this listing
+      const msgsQuery = db.collection('messages').where('listingId','==', listing.id).orderBy('createdAt','asc');
+      let unsubMsgs = null;
+
+      function convertMsg(d){ if(d.createdAt && typeof d.createdAt.toMillis === 'function') { try{ d.createdAt = d.createdAt.toMillis(); } catch(e){ d.createdAt = Date.now(); } } else if(typeof d.createdAt !== 'number'){ d.createdAt = Date.now(); } return d; }
+
+      unsubMsgs = msgsQuery.onSnapshot(snap=>{
+        body.innerHTML = '';
+        snap.forEach(doc=>{
+          const m = doc.data(); m.id = doc.id;
+          convertMsg(m);
+          renderMessageRow(m, listing, body);
+        });
+        body.scrollTop = body.scrollHeight;
+      }, err=>{
+        console.error('msgs snapshot err',err);
+      });
+
+      // send message
+      const sendBtn = modal.querySelector('#sendMsg');
+      const chatInput = modal.querySelector('#chatInput');
+      sendBtn.addEventListener('click', async ()=>{
+        const text = (chatInput.value||'').trim();
+        if(!text) return;
+        // ensure identity
+        let sender = null;
+        try{ if(auth && auth.currentUser){ sender = { uid: auth.currentUser.uid, name: auth.currentUser.displayName || auth.currentUser.email || 'ASU User', email: auth.currentUser.email || '' }; } }catch(e){}
+        if(!sender){
+          sender = getLocalIdentity();
+          if(!sender){
+            // prompt for identity synchronously
+            const id = await ensureLocalIdentity(true);
+            if(!id){ toast('You need a name to send messages',{type:'err'}); return; }
+            sender = id;
+          }
+        }
+
+        const msgDoc = {
+          listingId: listing.id,
+          fromUid: sender.uid || ('anon-'+Math.random().toString(36).slice(2,9)),
+          toUid: listing.ownerUid || 'anon',
+          fromName: sender.name || sender.email || 'Anonymous',
+          toName: listing.ownerName || listing.ownerEmail || 'Seller',
+          text: text,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        try{
+          await db.collection('messages').add(msgDoc);
+          chatInput.value = '';
+        }catch(e){ console.error('send err',e); toast('Could not send message',{type:'err'}); }
+      });
+
+      // allow Enter to send (Shift+Enter for newline)
+      chatInput.addEventListener('keydown', (ev)=>{
+        if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); modal.querySelector('#sendMsg').click(); }
+      });
+
+      // cleanup function
+      function cleanup(){
+        if(unsubMsgs) unsubMsgs(); chatRoot.innerHTML = ''; chatRoot.style.display='none';
+      }
+    }
+
+    // Renders a single message into the chat body
+    function renderMessageRow(m, listing, container){
+      const currentUid = (auth && auth.currentUser && auth.currentUser.uid) || (getLocalIdentity() && getLocalIdentity().uid) || null;
+      const isMe = currentUid && m.fromUid === currentUid;
+      const row = document.createElement('div'); row.className='msg-row';
+      const bubble = document.createElement('div'); bubble.className='msg'+(isMe?' me':'');
+      bubble.textContent = m.text;
+      const meta = document.createElement('small'); meta.textContent = (m.fromName || m.fromUid) + ' • ' + new Date(m.createdAt||Date.now()).toLocaleString();
+      bubble.appendChild(meta);
+      if(isMe){
+        row.style.justifyContent = 'flex-end';
+        row.appendChild(bubble);
+      } else {
+        row.appendChild(bubble);
+      }
+      container.appendChild(row);
+    }
+
+    // Note: We recommend adding security rules that require auth for writes in production,
+    // and that messages.listingId references an existing listing. For demo, permissive rules are acceptable.
+
+    // Parallax micro-interactions (keeps UI nice)
+    const l1 = document.getElementById('layer1'), l2 = document.getElementById('layer2'), l3 = document.getElementById('layer3');
+    let mouse={x:0,y:0};
+    window.addEventListener('mousemove',e=>{ mouse.x=e.clientX; mouse.y=e.clientY; });
+    (function loop(){ const t=window.scrollY||window.pageYOffset; const w=window.innerWidth,h=window.innerHeight; const mx=(mouse.x-w/2)/w; const my=(mouse.y-h/2)/h;
+      l1.style.transform=`translateX(${ -50 + mx*6 }%) translateY(${ -10 + t*0.03 }%)`; l2.style.transform=`translateX(${ -50 + mx*12 }%) translateY(${ -30 + t*0.06 }%)`; l3.style.transform=`translateX(${ -50 + mx*18 }%) translateY(${ -55 + t*0.09 }%)`; requestAnimationFrame(loop);
+    })();
+
+    // Messaging: sample index recommendation: collection messages, fields listingId ASC, createdAt ASC (optional)
+    // Start feed
+    startRealtimeFeed();
+
+    // Cleanup on unload
+    window.addEventListener('beforeunload', ()=>{ if(unsubSnapshot) unsubSnapshot(); });
+
+  })();
+  </script>
+</body>
+</html>

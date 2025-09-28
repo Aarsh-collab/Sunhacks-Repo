@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Auto List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --asu-maroon:#8C1D40;
+  --asu-maroon-dark:#5A1028;
+  --asu-gold:#FFC627;
+  --accent-green:#1F8A3E;
+  --bg:#F6F4F2;
+  --surface:#FBF8F4;
+  --card:#FFFFFF;
+  --text:#1A1C1F;
+  --muted:#636A74;
+  --border:rgba(27,27,31,.12);
+  --shadow-sm:0 12px 28px rgba(20,18,16,.08);
+  --shadow-lg:0 26px 60px rgba(16,14,12,.18);
+  --radius:18px;
+  --radius-sm:12px;
+  --transition:220ms cubic-bezier(.4,0,.2,1);
+  --focus-ring:0 0 0 3px rgba(140,29,64,.28);
+  --green-700:var(--accent-green);
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:radial-gradient(circle at top,#FDF9F2 0%,var(--bg) 60%);color:var(--text);min-height:100vh;}
+a{color:var(--asu-maroon);text-decoration:none;transition:color var(--transition);}
+a:hover{color:var(--asu-maroon-dark);}
+a:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-sm);}
+h1,h2,h3{margin:0;font-weight:700;color:var(--text);}
+p{margin:0;}
+
+.top-nav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid rgba(140,29,64,.12);padding:14px clamp(16px,4vw,40px);display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1rem;letter-spacing:.02em;color:var(--asu-maroon);}
+.brand-badge{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--asu-maroon);color:var(--asu-gold);font-weight:800;box-shadow:var(--shadow-sm);}
+.nav-links{display:flex;align-items:center;gap:12px;}
+.nav-link{padding:10px 16px;border-radius:999px;color:var(--text);font-weight:600;transition:background var(--transition),color var(--transition),transform var(--transition);}
+.nav-link:hover{background:rgba(140,29,64,.08);}
+.nav-link.is-active{background:var(--asu-maroon);color:#fff;}
+.nav-link.is-disabled{color:var(--muted);pointer-events:none;opacity:.6;}
+
+.page{padding:clamp(16px,4vw,48px);padding-top:32px;display:flex;justify-content:center;}
+.layout{width:100%;max-width:1200px;display:grid;gap:28px;grid-template-columns:minmax(0,1fr);}
+
+.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:clamp(18px,3vw,32px);display:flex;flex-direction:column;gap:28px;}
+.panel-header{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-start;}
+.panel-header p{margin-top:4px;color:var(--muted);max-width:420px;}
+.status-block{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right;}
+.status-label{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.status-text{font-weight:600;color:var(--asu-maroon);white-space:nowrap;}
+
+.progress-rail{display:flex;gap:12px;flex-wrap:wrap;}
+.progress-item{flex:1;min-width:160px;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid rgba(27,27,31,.08);position:relative;transition:background var(--transition),transform var(--transition),border-color var(--transition);}
+.progress-dot{width:12px;height:12px;border-radius:999px;background:rgba(140,29,64,.32);border:2px solid transparent;transition:background var(--transition),border-color var(--transition);}
+.progress-item .progress-label{font-weight:600;font-size:.9rem;color:var(--muted);}
+.progress-item.is-active{border-color:rgba(140,29,64,.45);background:rgba(140,29,64,.08);transform:translateY(-1px);}
+.progress-item.is-active .progress-dot{background:var(--asu-maroon);border-color:rgba(255,198,39,.55);}
+.progress-item.is-active .progress-label{color:var(--asu-maroon);}
+.progress-item.is-complete{background:rgba(255,198,39,.16);border-color:rgba(255,198,39,.48);}
+.progress-item.is-complete .progress-dot{background:var(--asu-gold);border-color:rgba(27,27,31,.12);}
+.progress-item.is-complete .progress-label{color:var(--text);}
+.progress-item.is-error{border-color:#b84b4b;background:rgba(184,75,75,.12);}
+.progress-item.is-error .progress-dot{background:#b84b4b;}
+
+.capture-grid{display:grid;gap:24px;grid-template-columns:minmax(0,1fr);}
+.drop-column{display:flex;flex-direction:column;gap:18px;}
+.drop-column #open{align-self:flex-start;}
+.side-column{display:flex;flex-direction:column;gap:18px;}
+
+.dropzone{position:relative;border:2px dashed rgba(27,27,31,.18);border-radius:var(--radius);padding:28px;background:linear-gradient(160deg,#fff 0%,rgba(255,198,39,.08) 100%);transition:border-color var(--transition),box-shadow var(--transition),transform var(--transition);}
+.dropzone:hover{border-color:var(--asu-maroon);box-shadow:0 18px 42px rgba(140,29,64,.12);transform:translateY(-2px);}
+.dropzone:focus-within{border-color:var(--asu-maroon);box-shadow:var(--focus-ring);}
+.dropzone-body{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.drop-icon{width:54px;height:54px;border-radius:18px;background:rgba(140,29,64,.12);display:flex;align-items:center;justify-content:center;color:var(--asu-maroon);font-size:26px;font-weight:700;}
+.dropzone h2{font-size:1.15rem;margin:0;font-weight:700;}
+.small{font-size:.85rem;}
+.button-row{display:flex;flex-wrap:wrap;gap:12px;}
+
+.camera-shell{background:#10151b;border-radius:var(--radius);padding:12px;min-height:220px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+video#cam{display:none;width:100%;border-radius:var(--radius-sm);max-height:320px;background:#000;}
+
+.toggle-row{display:flex;justify-content:space-between;align-items:center;gap:14px;}
+.toggle{display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;}
+.toggle input{width:18px;height:18px;accent-color:var(--asu-maroon);}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);border:1px solid rgba(27,27,31,.08);}
+.manual-box h2,.tips-card h2{font-size:1.05rem;margin-bottom:6px;font-weight:700;}
+.manual-box p{margin-bottom:14px;color:var(--muted);}
+.manual-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+.tips-card ul{margin:12px 0 0;padding-left:20px;color:var(--muted);display:grid;gap:6px;font-size:.92rem;}
+.tips-card li{line-height:1.4;}
+
+.status-footer{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px;border-radius:var(--radius-sm);background:rgba(140,29,64,.06);color:var(--text);}
+.status-footer strong{font-family:'Inter',sans-serif;}
+
+.debug-log{display:none;margin:0;background:#10151b;color:#D9F1FF;padding:14px;border-radius:var(--radius-sm);font-size:.78rem;max-height:240px;overflow:auto;border:1px solid rgba(255,255,255,.1);}
+
+#review.review-panel{display:none;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:clamp(20px,3vw,28px);border:1px solid rgba(27,27,31,.1);}
+#review h3{font-size:1.1rem;margin:0 0 6px;font-weight:700;color:var(--asu-maroon);}
+#review .muted{font-size:.88rem;margin-bottom:12px;color:var(--muted);}
+.review-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:10px;}
+.review-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;align-items:center;}
+.review-actions .text-input{min-width:220px;}
+
+.text-input,textarea.text-input{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid rgba(27,27,31,.18);background:#fff;font-size:.95rem;color:var(--text);transition:border-color var(--transition),box-shadow var(--transition);}
+.text-input:focus,textarea.text-input:focus{outline:none;border-color:var(--asu-maroon);box-shadow:var(--focus-ring);}
+textarea.text-input{min-height:110px;resize:vertical;}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:999px;font-weight:700;font-size:.95rem;border:1px solid transparent;background:var(--surface);color:var(--text);cursor:pointer;transition:transform var(--transition),box-shadow var(--transition),background var(--transition),border-color var(--transition);}
+.btn:hover{transform:translateY(-1px);}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring);}
+.btn.primary{background:var(--asu-maroon);color:#fff;border-color:var(--asu-maroon);}
+.btn.primary:hover{background:var(--asu-maroon-dark);}
+.btn.outline{background:transparent;color:var(--asu-maroon);border-color:rgba(140,29,64,.45);}
+.btn.outline:hover{background:rgba(140,29,64,.08);}
+.btn.ghost{background:transparent;color:var(--asu-maroon);border-color:rgba(140,29,64,.25);}
+.btn.ghost:hover{background:rgba(140,29,64,.08);} 
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none;}
+
+.floating-back{position:fixed;bottom:24px;left:24px;z-index:30;padding:10px 16px;border-radius:999px;background:rgba(140,29,64,.12);color:var(--asu-maroon);font-weight:600;border:1px solid rgba(140,29,64,.24);backdrop-filter:blur(8px);
+  transition:background var(--transition),transform var(--transition);}
+.floating-back:hover{background:rgba(140,29,64,.2);transform:translateY(-2px);}
+
+.muted{color:var(--muted);}
+
+@media (min-width:960px){
+  .layout{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);}
+  .capture-grid{grid-template-columns:minmax(0,1fr);}
+}
+
+@media (max-width:720px){
+  .top-nav{padding-inline:18px;}
+  .status-block{align-items:flex-start;text-align:left;}
+  .floating-back{left:16px;right:auto;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important;}
+}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+<script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+<script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
+</head>
+<body>
+<header class="top-nav">
+  <div class="nav-brand" aria-label="SunDevil Books">
+    <span class="brand-badge" aria-hidden="true">ASU</span>
+    <span class="brand-text">SunDevil Books</span>
+  </div>
+  <nav class="nav-links" aria-label="Main navigation">
+    <a class="nav-link" href="marketplace.html">Marketplace</a>
+    <a class="nav-link is-active" href="auto-list.html">Auto-List (Photo)</a>
+    <a class="nav-link" href="my-listings.html">My Listings</a>
+    <a class="nav-link is-disabled" href="#" aria-disabled="true">Login</a>
+  </nav>
+</header>
+
+<main class="page">
+  <div class="layout">
+    <section class="panel capture-panel">
+      <div class="panel-header">
+        <div>
+          <h1>Auto-list a book</h1>
+          <p class="muted">We’ll read the barcode or cover, set a fair price, upload, and post.</p>
+        </div>
+        <div class="status-block">
+          <span class="status-label">Status</span>
+          <span id="status" class="status-text" aria-live="polite">Ready.</span>
+        </div>
+      </div>
+
+      <div class="progress-rail" role="list" aria-label="Listing workflow">
+        <div class="progress-item is-active" data-progress-step="analyze" role="listitem">
+          <span class="progress-dot" aria-hidden="true"></span>
+          <span class="progress-label">Analyzing</span>
+        </div>
+        <div class="progress-item" data-progress-step="upload" role="listitem">
+          <span class="progress-dot" aria-hidden="true"></span>
+          <span class="progress-label">Uploading photo</span>
+        </div>
+        <div class="progress-item" data-progress-step="create" role="listitem">
+          <span class="progress-dot" aria-hidden="true"></span>
+          <span class="progress-label">Creating listing</span>
+        </div>
+      </div>
+
+      <div class="capture-grid">
+        <div class="drop-column">
+          <div class="dropzone" role="group" aria-labelledby="dropzoneTitle">
+            <input id="fileInput" type="file" accept="image/heic,image/heif,image/jpeg,image/png,image/webp" capture="environment" hidden>
+            <div class="dropzone-body">
+              <div class="drop-icon" aria-hidden="true">📷</div>
+              <div>
+                <h2 id="dropzoneTitle">Upload or snap a photo</h2>
+                <p class="muted small">Clear photos help us read the ISBN and price your book accurately.</p>
+              </div>
+            </div>
+            <div class="button-row">
+              <button id="photo" class="btn primary" type="button">Upload Photo</button>
+              <button id="takePhoto" class="btn outline" type="button">Take Photo (JPEG)</button>
+            </div>
+            <p id="help" class="muted small" style="margin-top:12px">Tip: Use a clear photo of the barcode area or front cover. JPEG/PNG/WebP/HEIC work. We’ll OCR the printed ISBN or cover text.</p>
+          </div>
+
+          <div class="camera-shell">
+            <video id="cam" playsinline></video>
+          </div>
+
+          <div class="toggle-row">
+            <label class="toggle muted">
+              <input id="debugToggle" type="checkbox"> Debug
+            </label>
+            <span>Last ID: <strong id="last">—</strong></span>
+          </div>
+          <a id="open" class="btn ghost" style="display:none" target="_blank" rel="noopener">Open listing</a>
+          <pre id="debug" class="debug-log" aria-live="polite"></pre>
+        </div>
+
+        <aside class="side-column">
+          <div class="manual-box card">
+            <h2>Manual ISBN</h2>
+            <p class="muted small">Already know the ISBN? Paste it here to override OCR.</p>
+            <div class="manual-row">
+              <input id="manualIsbn" class="text-input" placeholder="Enter ISBN (optional)">
+              <button id="manualPost" class="btn ghost" type="button">Apply ISBN</button>
+            </div>
+          </div>
+
+          <div class="tips-card card">
+            <h2>Tips for best results</h2>
+            <ul>
+              <li>Use bright, even lighting with minimal glare.</li>
+              <li>Fill the frame with the barcode or full front cover.</li>
+              <li>Keep the camera steady and avoid motion blur.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <aside id="review" class="review-panel" style="display:none">
+      <h3>Review details</h3>
+      <div class="muted">Edit anything that looks off. Type POST to confirm before publishing.</div>
+      <div class="review-grid">
+        <label class="muted">ISBN
+          <input id="reviewIsbn" class="text-input" placeholder="9780134093413">
+        </label>
+        <label class="muted">Title
+          <input id="reviewTitle" class="text-input" placeholder="Book title">
+        </label>
+        <label class="muted">Author
+          <input id="reviewAuthor" class="text-input" placeholder="Author name">
+        </label>
+        <label class="muted">Edition / Subtitle
+          <input id="reviewEdition" class="text-input" placeholder="Edition (optional)">
+        </label>
+        <label class="muted">Price (USD)
+          <input id="reviewPrice" class="text-input" type="number" min="1" step="0.01" placeholder="25.00">
+        </label>
+      </div>
+      <label class="muted" style="display:block;margin-top:10px">Description / condition notes
+        <textarea id="reviewDesc" class="text-input" placeholder="Highlight condition, notes, or pickup preferences"></textarea>
+      </label>
+      <div class="review-actions">
+        <label class="muted" style="flex:1;min-width:220px">Confirmation — type <b>POST</b> to enable
+          <input id="reviewConfirm" class="text-input" placeholder="POST">
+        </label>
+        <button id="finalPost" class="btn primary" type="button" disabled>Post listing</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<a class="floating-back" href="marketplace.html">← Marketplace</a>
+
+<script>
+/*** 1) Firebase config ***/
+const firebaseConfig = {
+  apiKey: "AIzaSyDa8jBTAxpNw_01cYdke_IQqAS7dh83d6k",
+  authDomain: "asu-textbook-marketplace.firebaseapp.com",
+  projectId: "asu-textbook-marketplace",
+  storageBucket: "asu-textbook-marketplace.appspot.com", // corrected bucket domain
+  messagingSenderId: "275260067181",
+  appId: "1:275260067181:web:2abd6a3f46f484bad69e64",
+  measurementId: "G-PG98RMLS6V"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(), storage = firebase.storage();
+const auth = firebase.auth ? firebase.auth() : null;
+// ---- MOCK MODE: if config is not filled, we simulate upload + DB
+const USE_MOCK = !firebaseConfig || firebaseConfig.apiKey === "REPLACE_ME";
+let mockStorageOk = true;
+function saveMockListing(id, doc){
+  let stored = false;
+  try{
+    const store = JSON.parse(localStorage.getItem('mockListings') || '{}');
+    store[id] = doc;
+    localStorage.setItem('mockListings', JSON.stringify(store));
+    stored = true;
+  }catch(e){
+    mockStorageOk = false;
+    console.warn('mock save failed', e);
+  }
+  try {
+    sessionStorage.setItem('mockListing:'+id, JSON.stringify(doc));
+  } catch (e) {
+    console.warn('mock session save failed', e);
+  }
+  return stored;
+}
+/*** 2) DOM ***/
+const statusEl = document.getElementById('status'), lastEl = document.getElementById('last'), openA = document.getElementById('open');
+const photoBtn = document.getElementById('photo');
+const fileInput = document.getElementById('fileInput');
+const debugEl = document.getElementById('debug');
+const debugToggle = document.getElementById('debugToggle');
+const cam = document.getElementById('cam');
+const takeBtn = document.getElementById('takePhoto');
+const reviewSection = document.getElementById('review');
+const reviewIsbnInput = document.getElementById('reviewIsbn');
+const reviewTitleInput = document.getElementById('reviewTitle');
+const reviewAuthorInput = document.getElementById('reviewAuthor');
+const reviewEditionInput = document.getElementById('reviewEdition');
+const reviewPriceInput = document.getElementById('reviewPrice');
+const reviewDescInput = document.getElementById('reviewDesc');
+const reviewConfirmInput = document.getElementById('reviewConfirm');
+const finalPostBtn = document.getElementById('finalPost');
+const progressSteps = Array.from(document.querySelectorAll('[data-progress-step]'));
+function log(msg){ if(!debugEl) return; const t=new Date().toLocaleTimeString(); debugEl.textContent += `[${t}] ${msg}\n`; debugEl.scrollTop = debugEl.scrollHeight; }
+function setDebug(on){ if(!debugEl) return; debugEl.style.display = on ? 'block' : 'none'; }
+(debugToggle||{}).onchange = ()=> setDebug(debugToggle.checked);
+
+let lastCanvas = null;
+let pendingCanvas = null;
+let pendingMeta = null;
+let pendingIsbn = '';
+let pendingPrice = null;
+
+/*** Helper to robustly wait for real video dimensions ***/
+// Camera and scanning helpers removed.
+async function canvasToFile(c,name='book.jpg',q=0.85){ const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',q)); return new File([blob],name,{type:'image/jpeg'}); }
+
+function canvasToMockDataUrl(canvas, maxDim = 960, quality = 0.72){
+  if (!canvas) return null;
+  const currentMax = Math.max(canvas.width, canvas.height);
+  if (!currentMax) return null;
+  let work = canvas;
+  if (currentMax > maxDim){
+    const scale = maxDim / currentMax;
+    const c = document.createElement('canvas');
+    c.width = Math.round(canvas.width * scale);
+    c.height = Math.round(canvas.height * scale);
+    c.getContext('2d').drawImage(canvas, 0, 0, c.width, c.height);
+    work = c;
+  }
+  try {
+    return work.toDataURL('image/jpeg', quality);
+  } catch (err) {
+    console.warn('mock data URL failed', err);
+    return null;
+  }
+}
+
+function guessFacingMode(track){
+  if (!track) return 'environment';
+  let facing = 'environment';
+  try {
+    const settings = typeof track.getSettings === 'function' ? track.getSettings() : {};
+    if (settings && settings.facingMode) facing = settings.facingMode;
+    else {
+      const label = (track.label || '').toLowerCase();
+      if (/front|face|user|integrated/.test(label)) facing = 'user';
+      else if (/back|rear|world|environment/.test(label)) facing = 'environment';
+    }
+  } catch (err) {
+    console.warn('guessFacingMode failed', err);
+  }
+  return facing === 'user' ? 'user' : 'environment';
+}
+
+function enhanceForOcr(src, scale = 1.5){
+  if (!src || !src.width || !src.height) return src;
+  const w = Math.max(1, Math.round(src.width * scale));
+  const h = Math.max(1, Math.round(src.height * scale));
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.filter = 'grayscale(100%) contrast(140%) brightness(112%)';
+  ctx.drawImage(src, 0, 0, w, h);
+  return c;
+}
+
+function fileToImage(file){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function imageToCanvas(img, maxDim = 1600){
+  const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.naturalWidth * scale);
+  c.height = Math.round(img.naturalHeight * scale);
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+
+async function maybeConvertHeic(file) {
+  const isHeic = (/\.(heic|heif)$/i).test(file.name || '') || file.type === 'image/heic' || file.type === 'image/heif';
+  if (!isHeic) return file;
+  try {
+    if (typeof heic2any !== 'function') throw new Error('converter-missing');
+    let out = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+    if (Array.isArray(out)) out = out[0];
+    return new File([out], (file.name||'photo').replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
+  } catch (e) {
+    // Many browsers/contexts can’t decode HEIC (ERR_LIBHEIF). Fall back to camera snapshot flow.
+    throw new Error('HEIC not supported here. Use Take Photo (JPEG).');
+  }
+}
+let camStream = null; let camArmed = false; let camFacing = 'environment';
+async function startCam(){
+  if (camStream) return; // already started
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } });
+    const track = camStream.getVideoTracks()[0];
+    camFacing = guessFacingMode(track);
+    cam.srcObject = camStream; cam.style.display = 'block';
+    cam.style.transform = '';
+    await cam.play();
+    camArmed = true;
+    statusEl.textContent = 'Camera ready — tap again to capture.'; log('camera ready ('+camFacing+')');
+  }catch(err){
+    camStream = null; cam.style.display='none';
+    statusEl.textContent = 'Could not access camera.'; log('camera error: '+(err.message||err));
+  }
+}
+function stopCam(){
+  if (camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+  cam.pause(); cam.srcObject = null; cam.style.transform=''; cam.style.display='none'; camArmed = false; camFacing = 'environment';
+}
+function snapFromCam(){
+  if (!cam.videoWidth || !cam.videoHeight) throw new Error('Camera not ready.');
+  const c = document.createElement('canvas');
+  const maxDim = 1600; // match photo path
+  const scale = Math.min(1, maxDim / Math.max(cam.videoWidth, cam.videoHeight));
+  c.width = Math.round(cam.videoWidth * scale);
+  c.height = Math.round(cam.videoHeight * scale);
+  const ctx = c.getContext('2d');
+  ctx.drawImage(cam, 0, 0, c.width, c.height);
+  return c;
+}
+
+function rotateCanvas(src, deg){
+  const rad = (deg*Math.PI)/180;
+  const sW = src.width, sH = src.height;
+  const dest = document.createElement('canvas');
+  if (deg % 180 !== 0) { dest.width = sH; dest.height = sW; }
+  else { dest.width = sW; dest.height = sH; }
+  const ctx = dest.getContext('2d');
+  ctx.translate(dest.width/2, dest.height/2);
+  ctx.rotate(rad);
+  ctx.drawImage(src, -sW/2, -sH/2);
+  return dest;
+}
+function upscaleCanvas(src, factor=1.8){
+  const c = document.createElement('canvas');
+  c.width = Math.round(src.width * factor);
+  c.height = Math.round(src.height * factor);
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(src, 0, 0, c.width, c.height);
+  return c;
+}
+function cropBottomBand(src, bandHeightPct = 0.55){
+  const h = Math.round(src.height * bandHeightPct);
+  const y = src.height - h;
+  const c = document.createElement('canvas');
+  c.width = src.width; c.height = h;
+  c.getContext('2d').drawImage(src, 0, y, src.width, h, 0, 0, src.width, h);
+  return c;
+}
+
+function clearReview(){
+  if (!reviewSection) return;
+  pendingMeta = null;
+  pendingIsbn = '';
+  pendingPrice = null;
+  pendingCanvas = null;
+  reviewConfirmInput.value = '';
+  [reviewIsbnInput, reviewTitleInput, reviewAuthorInput, reviewEditionInput, reviewPriceInput, reviewDescInput].forEach(el=>{ if(el) el.value=''; });
+  reviewSection.style.display = 'none';
+  updatePostButtonState();
+}
+
+function populateReview({ isbn='', meta={}, price=null, canvas=null, message='' }){
+  if (!reviewSection) return;
+  pendingMeta = { ...(meta||{}) };
+  pendingIsbn = isbn || '';
+  pendingPrice = price;
+  if (canvas) pendingCanvas = canvas;
+  reviewSection.style.display = 'block';
+  if (manualInput) manualInput.value = pendingIsbn;
+  if (reviewIsbnInput) reviewIsbnInput.value = pendingIsbn;
+  if (reviewTitleInput) reviewTitleInput.value = (meta?.title || '').trim();
+  if (reviewAuthorInput) reviewAuthorInput.value = (meta?.author || '').trim();
+  if (reviewEditionInput) reviewEditionInput.value = (meta?.edition || '').trim();
+  if (reviewPriceInput) {
+    const priceVal = price != null && Number.isFinite(Number(price)) ? Number(price) : '';
+    reviewPriceInput.value = priceVal === '' ? '' : priceVal.toFixed(2);
+  }
+  if (message) statusEl.textContent = message;
+  reviewConfirmInput.value = '';
+  openA.style.display = 'none';
+  syncProgressFromStatus();
+  updatePostButtonState();
+}
+
+function updatePostButtonState(){
+  if (!finalPostBtn) return;
+  const isbnVal = (reviewIsbnInput?.value || '').replace(/[^0-9Xx]/g,'').toUpperCase();
+  const titleVal = (reviewTitleInput?.value || '').trim();
+  const authorVal = (reviewAuthorInput?.value || '').trim();
+  const priceVal = Number.parseFloat(reviewPriceInput?.value || '');
+  const confirmVal = (reviewConfirmInput?.value || '').trim().toUpperCase();
+  const isbnOk = isbnVal.length === 10 || isbnVal.length === 13;
+  const requiredOk = Boolean(titleVal && authorVal);
+  const priceOk = Number.isFinite(priceVal) && priceVal > 0;
+  const confirmOk = confirmVal === 'POST';
+  const canvasOk = Boolean(pendingCanvas);
+  finalPostBtn.disabled = !(isbnOk && requiredOk && priceOk && confirmOk && canvasOk);
+}
+
+function resolveOwner(){
+  let user = null;
+  try { if (auth && auth.currentUser) user = auth.currentUser; } catch (_) {}
+  return {
+    ownerUid: user && user.uid ? user.uid : 'u1',
+    ownerName: user ? (user.displayName || user.email || 'Seller') : 'Seller',
+    ownerEmail: user && user.email ? user.email : ''
+  };
+}
+
+function syncProgressFromStatus(){
+  if (!progressSteps.length) return;
+  const text = (statusEl.textContent || '').toLowerCase();
+  const isDone = text.includes('done');
+  const isError = text.includes('failed') || text.includes('error');
+  let activeIndex = -1;
+  if (text.includes('creating listing')) activeIndex = 2;
+  else if (text.includes('uploading photo')) activeIndex = 1;
+  else if (text.includes('analyzing')) activeIndex = 0;
+  else if (text.includes('ready')) activeIndex = 0;
+  if (isError && activeIndex === -1) activeIndex = 0;
+
+  progressSteps.forEach((step, idx) => {
+    step.classList.remove('is-active','is-complete','is-error');
+    if (isDone) {
+      step.classList.add('is-complete');
+      return;
+    }
+    if (isError) {
+      if (idx < activeIndex) step.classList.add('is-complete');
+      else if (idx === activeIndex) step.classList.add('is-error');
+      return;
+    }
+    if (idx < activeIndex) {
+      step.classList.add('is-complete');
+    } else if (idx === activeIndex) {
+      step.classList.add('is-active');
+    }
+  });
+
+  if (!isDone && !isError && activeIndex < 0 && progressSteps[0]) {
+    progressSteps[0].classList.add('is-active');
+  }
+}
+
+const statusObserver = statusEl ? new MutationObserver(()=>syncProgressFromStatus()) : null;
+if (statusObserver && statusEl) {
+  statusObserver.observe(statusEl, { childList:true, characterData:true, subtree:true });
+}
+syncProgressFromStatus();
+
+async function submitListing(){
+  try{
+    updatePostButtonState();
+    if (finalPostBtn.disabled){
+      statusEl.textContent = 'Fill required fields and type POST to enable the button.';
+      return;
+    }
+    const { ownerUid, ownerName, ownerEmail } = resolveOwner();
+    const isbnVal = (reviewIsbnInput.value || '').replace(/[^0-9Xx]/g,'').toUpperCase();
+    const titleVal = (reviewTitleInput.value || '').trim();
+    const authorVal = (reviewAuthorInput.value || '').trim();
+    const editionVal = (reviewEditionInput.value || '').trim();
+    const descVal = (reviewDescInput.value || '').trim();
+    const priceInputVal = Number.parseFloat(reviewPriceInput.value || '');
+    const priceVal = Number.isFinite(priceInputVal) ? Math.round(priceInputVal * 100) / 100 : null;
+    if (!pendingCanvas){ statusEl.textContent = 'Take a photo first.'; return; }
+    statusEl.textContent = 'Preparing photo…';
+    let imageUrl;
+    try {
+      const photoFile = await canvasToFile(pendingCanvas,'book.jpg',0.9);
+      statusEl.textContent = 'Uploading photo…';
+      imageUrl = await uploadImage(photoFile, ownerUid);
+    } catch (err) {
+      console.error(err);
+      log('upload fallback (submit): ' + (err?.message || err));
+      statusEl.textContent = 'Upload failed — using local photo.';
+      imageUrl = canvasToMockDataUrl(pendingCanvas);
+      if (!imageUrl) throw err;
+    }
+
+    const doc = {
+      ownerUid,
+      title: titleVal,
+      author: authorVal,
+      isbn: isbnVal,
+      edition: editionVal,
+      description: descVal,
+      courseCodes: [],
+      price: priceVal || 0,
+      imageUrl,
+      status: 'active',
+      ownerName,
+      ownerEmail,
+      createdAt: Date.now()
+    };
+    doc.searchKeys = searchKeys(doc);
+
+    openA.style.display = 'none';
+    statusEl.textContent = 'Creating listing…';
+    log('final submit');
+    let newId;
+    let mockSessionOnly=false;
+    if (USE_MOCK) {
+      newId='mock_'+Date.now();
+      const stored = saveMockListing(newId,doc);
+      if (!stored) {
+        mockSessionOnly = true;
+        openA.removeAttribute('target');
+        openA.rel = 'noopener';
+      }
+      const mockImg = canvasToMockDataUrl(pendingCanvas);
+      if (mockImg) {
+        try { sessionStorage.setItem('mockImage:'+newId, mockImg); } catch (e) { console.warn('mock image session save failed', e); }
+      }
+    } else {
+      const ref = await db.collection('listings').add(doc);
+      newId = ref.id;
+    }
+
+    statusEl.textContent = mockSessionOnly ? 'Done. (Mock saved for this tab only)' : 'Done.';
+    lastEl.textContent = newId;
+    openA.href = `listing.html?id=${encodeURIComponent(newId)}`;
+    openA.style.display = 'inline-block';
+    if (USE_MOCK && (!mockStorageOk || mockSessionOnly)) {
+      openA.removeAttribute('target');
+    }
+    reviewConfirmInput.value = '';
+    pendingCanvas = null;
+    updatePostButtonState();
+  }catch(e){
+    console.error(e);
+    statusEl.textContent = 'Failed: ' + (e.message || 'error');
+    log('submit error: '+(e?.message || e));
+  }
+}
+async function autoListFromCanvas(canvas){
+  statusEl.textContent = 'Analyzing photo…';
+  log('analyze start');
+  if (!canvas.width || !canvas.height || canvas.width < 400 || canvas.height < 400) {
+    throw new Error('Photo too small/blurry — take a clearer picture (≥ 800px on the long side).');
+  }
+
+  let meta = null, isbn = null;
+
+  const manualEl = document.getElementById('manualIsbn');
+  const manualOverride = (() => {
+    if (!manualEl) return '';
+    const raw = (manualEl.value || '').replace(/[^0-9Xx]/g,'').toUpperCase();
+    if (raw && (raw.length === 10 || raw.length === 13)) return raw;
+    return '';
+  })();
+
+  if (manualOverride) {
+    isbn = manualOverride;
+    statusEl.textContent = 'Using manual ISBN — fetching book info…';
+    log('manual ISBN override: ' + isbn);
+    meta = await fetchByISBN(isbn);
+  }
+
+  if (!isbn) {
+    const oIsbn = await ocrIsbn(canvas);
+    if (oIsbn) {
+      isbn = oIsbn;
+      statusEl.textContent = 'Found ISBN in text — fetching book info…';
+      log('fetch by ISBN: '+isbn);
+      meta = await fetchByISBN(isbn);
+    }
+  }
+
+  if (!meta) {
+    statusEl.textContent = 'Reading cover text…';
+    const o = await ocrTitleAuthor(canvas);
+    const q = [o.title, o.author].filter(Boolean).join(' ');
+    meta = q ? await searchByText(q) : null;
+  }
+
+  if (!meta) meta = { title: '', author: '', edition: '' };
+
+  meta.title = (meta.title || '').trim();
+  meta.author = (meta.author || '').trim();
+  meta.edition = (meta.edition || '').trim();
+
+  const hasMeta = Boolean(meta.title || meta.author);
+  const message = hasMeta
+    ? 'Review the details below, edit if needed, then type POST to publish.'
+    : (isbn
+      ? `Could not find book info for ISBN ${isbn}. Fill in the fields below and type POST to publish.`
+      : 'We could not read the book — fill in the fields below and type POST to publish.');
+
+  const price = choosePrice(meta, 'Good');
+  populateReview({ isbn, meta, price, canvas, message });
+  openA.style.display = 'none';
+  log('awaiting manual confirmation');
+}
+
+async function ocrTitleAuthor(canvas){
+  const w=canvas.width,h=canvas.height,cw=Math.round(w*0.7),ch=Math.round(h*0.5),cx=Math.round((w-cw)/2),cy=Math.round((h-ch)/2);
+  statusEl.textContent = 'Reading cover text… (loading OCR)';
+  log('OCR start: cover region');
+  const crop=document.createElement('canvas'); crop.width=cw; crop.height=ch; crop.getContext('2d').drawImage(canvas,cx,cy,cw,ch,0,0,cw,ch);
+  const enhanced = enhanceForOcr(crop, 1.6);
+  const dataUrl=enhanced.toDataURL('image/jpeg',0.92);
+  const { data:{ text }} = await Tesseract.recognize(dataUrl,'eng',{ logger: m => { if(m.status){ statusEl.textContent = `Reading cover text… ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; log(`tesseract: ${m.status} ${m.progress||''}`); } } });
+  const clean=text.replace(/\s+/g,' ').trim();
+  let title=clean.split(/by\s/i)[0].slice(0,80).trim();
+  let author=(clean.match(/by\s+([A-Za-z .'-]+)/i)||[,''])[1]?.trim()||'';
+  return { title, author };
+}
+
+async function ocrIsbn(canvas){
+  const region = cropBottomBand(canvas, 0.6);
+  const enhanced = enhanceForOcr(region, 2.1);
+  const dataUrl = enhanced.toDataURL('image/jpeg', 0.92);
+  statusEl.textContent = 'Looking for ISBN text… (loading OCR)';
+  log('OCR start: ISBN region');
+  const { data:{ text }} = await Tesseract.recognize(dataUrl, 'eng', { logger: m => { if(m.status){ statusEl.textContent = `Looking for ISBN text… ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; log(`tesseract: ${m.status} ${m.progress||''}`); } } });
+  const clean = text.replace(/\s+/g,' ');
+  const m = clean.match(/(97[89][0-9\-\s]{9,18}|(?<!\d)[0-9]{9}[0-9Xx](?!\d))/);
+  if (!m) return null;
+  const raw = m[1].replace(/[^0-9Xx]/g,'').toUpperCase();
+  if (raw.length === 13 || raw.length === 10) return raw;
+  return null;
+}
+
+/*** 5) metadata lookups ***/
+function mergeMeta(base, extra){
+  if (!extra) return base;
+  if (!base) return { ...extra };
+  const merged = { ...base };
+  const pickFields = ['title','author','edition','published'];
+  for (const field of pickFields){
+    const current = (merged[field] || '').trim();
+    const incoming = (extra[field] || '').trim();
+    if (incoming && (!current || incoming.length > current.length)) merged[field] = incoming;
+  }
+  if (typeof extra.msrp === 'number' && !Number.isFinite(merged.msrp)) merged.msrp = extra.msrp;
+  return merged;
+}
+
+async function fetchGoogleByIsbn(isbn){
+  try{
+    const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}`);
+    if (!r.ok) return null;
+    const j=await r.json();
+    const item = j.items?.find(it=>it?.volumeInfo?.title);
+    if(!item) return null;
+    const v=item.volumeInfo||{};
+    const sale=item.saleInfo?.listPrice?.amount ?? item.saleInfo?.retailPrice?.amount ?? null;
+    const author = Array.isArray(v.authors) ? (v.authors[0] || '') : (v.authors || '');
+    return { title:v.title||'', author, edition:v.subtitle||'', published:v.publishedDate||'', msrp: typeof sale === 'number' ? sale : null };
+  } catch { return null; }
+}
+
+async function fetchOpenLibraryByIsbn(isbn){
+  try{
+    const r=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${encodeURIComponent(isbn)}&jscmd=data&format=json`);
+    if (!r.ok) return null;
+    const j=await r.json();
+    const data=j[`ISBN:${isbn}`];
+    if(!data) return null;
+    const author = Array.isArray(data.authors) && data.authors[0]?.name ? data.authors[0].name : '';
+    return { title:data.title||'', author, edition:data.subtitle||'', published:data.publish_date||'', msrp:null };
+  } catch { return null; }
+}
+
+async function fetchByISBN(isbn){
+  const clean=(isbn||'').replace(/[^0-9Xx]/g,'').toUpperCase();
+  if(!clean) return null;
+  const [google, openLib] = await Promise.all([fetchGoogleByIsbn(clean), fetchOpenLibraryByIsbn(clean)]);
+  let meta=null;
+  meta=mergeMeta(meta, google);
+  meta=mergeMeta(meta, openLib);
+  return meta;
+}
+
+async function searchByText(q){
+  try{
+    const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}`);
+    if (!r.ok) return null;
+    const j=await r.json();
+    const item=j.items?.find(it=>it?.volumeInfo?.title);
+    if(!item) return null;
+    const v=item.volumeInfo||{};
+    const sale=item.saleInfo?.listPrice?.amount ?? item.saleInfo?.retailPrice?.amount ?? null;
+    const author = Array.isArray(v.authors) ? (v.authors[0] || '') : (v.authors || '');
+    return { title:v.title||'', author, edition:v.subtitle||'', published:v.publishedDate||'', msrp: typeof sale === 'number' ? sale : null };
+  } catch { return null; }
+}
+
+/*** 6) pricing ***/
+function choosePrice(meta, condition='Good'){
+  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  // Start with MSRP if provided, otherwise use $30 default
+  let base = (typeof meta?.msrp === 'number') ? meta.msrp : 30;
+
+  // Always depreciate for used: apply 0.7 factor (30% off new)
+  let p = base * 0.7;
+
+  // Condition adjustments
+  if(condition === 'Like New') p += 3;  // slight bump
+  if(condition === 'Fair') p -= 5;      // discount more
+
+  // Clamp to reasonable range
+  return Math.round(clamp(p, 5, 60));
+}
+
+/*** 7) storage upload ***/
+async function uploadImage(file, ownerUid='anon'){
+  // Storage disabled for hackathon: inline the image as a Data URL in Firestore
+  if (!file || !file.type || !file.type.startsWith('image/')) {
+    throw new Error('Image required');
+  }
+  // Convert to JPEG data URL at a reasonable size
+  const img = await fileToImage(file);
+  const canvas = await imageToCanvas(img, 1200); // max 1200px on long edge
+  try {
+    return canvas.toDataURL('image/jpeg', 0.85);
+  } catch (e) {
+    console.warn('dataURL encode failed', e);
+    throw new Error('Could not encode image');
+  }
+}
+/*** 8) search keys ***/
+function searchKeys(o){ const s=new Set(); (o.title||'').split(/\s+/).forEach(t=>{t=t.replace(/[^\w]/g,'').toUpperCase(); if(t) s.add(t)}); (o.author||'').split(/\s+/).forEach(t=>{t=t.replace(/[^\w]/g,'').toUpperCase(); if(t) s.add(t)}); if(o.isbn) s.add(String(o.isbn).toUpperCase()); (o.courseCodes||[]).forEach(c=>s.add(String(c).toUpperCase())); return Array.from(s); }
+
+/*** 10) wire buttons ***/
+photoBtn.addEventListener('click', ()=>{
+  // Prefer the OS camera app for best autofocus; user picks/takes a single photo
+  fileInput.click();
+});
+
+takeBtn.addEventListener('click', async ()=>{
+  // First click: arm camera. Second click: capture & post.
+  if (!camArmed){
+    statusEl.textContent = 'Opening camera…';
+    await startCam();
+    if (camArmed) takeBtn.textContent = 'Capture & Post';
+    return;
+  }
+  try{
+    statusEl.textContent = 'Capturing…';
+    const canvas = snapFromCam();
+    lastCanvas = canvas;
+    stopCam(); takeBtn.textContent = 'Take Photo (JPEG)';
+    await autoListFromCanvas(canvas);
+  }catch(e){
+    console.error(e); statusEl.textContent = 'Failed: '+(e.message||'capture error');
+  }
+});
+
+fileInput.addEventListener('change', async ()=>{
+  const file = fileInput.files && fileInput.files[0];
+  if (!file) return;
+  let img;
+  try{
+    statusEl.textContent = 'Loading photo…';
+    // Convert iPhone HEIC/HEIF to JPEG if necessary
+    const usable = await maybeConvertHeic(file);
+    img = await fileToImage(usable);
+    const canvas = await imageToCanvas(img, 1600);
+    lastCanvas = canvas;
+    await autoListFromCanvas(canvas);
+  } catch(e){
+    console.error(e);
+    statusEl.textContent = 'Failed: ' + (e.message || 'could not process photo');
+    if (/HEIC not supported/i.test(e.message||'')) { statusEl.textContent += ' — Tap “Take Photo (JPEG)”.'; }
+    // Keep a quick reminder visible
+    const help = document.getElementById('help');
+    if (help) help.style.color = '#b84b4b';
+  } finally {
+    // Clean up object URL
+    try { URL.revokeObjectURL(img?.src); } catch {}
+    fileInput.value = '';
+  }
+});
+
+const manualInput = document.getElementById('manualIsbn');
+const manualPost = document.getElementById('manualPost');
+manualPost.addEventListener('click', async ()=>{
+  try{
+    const val=(manualInput.value||'').replace(/[^0-9Xx]/g,'').toUpperCase();
+    if(!val){ statusEl.textContent='Enter a valid ISBN (10 or 13).'; return; }
+    if(!(val.length===10||val.length===13)){ statusEl.textContent='ISBN must be 10 or 13 digits.'; return; }
+    statusEl.textContent='Fetching book info…'; log('manual fetch ISBN: '+val);
+    const meta = await fetchByISBN(val) || { title:'', author:'', edition:'' };
+    meta.title = (meta.title || '').trim();
+    meta.author = (meta.author || '').trim();
+    meta.edition = (meta.edition || '').trim();
+    const price=choosePrice(meta,'Good');
+    const msg = (meta.title || meta.author)
+      ? 'Review the details below, edit if needed, then type POST to publish.'
+      : 'Fill in the missing fields below and type POST to publish.';
+    const canvasSource = lastCanvas || pendingCanvas;
+    if (!canvasSource) { statusEl.textContent='Pick a photo first (Choose Photo).'; return; }
+    populateReview({ isbn: val, meta, price, canvas: canvasSource, message: msg });
+  }catch(e){ console.error(e); statusEl.textContent='Failed: '+(e.message||'error'); log('error: '+e.message); }
+});
+
+[reviewIsbnInput, reviewTitleInput, reviewAuthorInput, reviewEditionInput, reviewPriceInput, reviewDescInput, reviewConfirmInput]
+  .forEach(el=>{ if (el) el.addEventListener('input', updatePostButtonState); });
+if (finalPostBtn) finalPostBtn.addEventListener('click', submitListing);
+updatePostButtonState();
+</script>
+</body></html>
