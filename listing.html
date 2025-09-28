@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listing Details - SunBooks</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+        import { getListing } from './lib/listings.js';
+        import { getUser } from './lib/users.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDa8jBTAxpNw_01cYdke_IQqAS7dh83d6k",
+            authDomain: "asu-textbook-marketplace.firebaseapp.com",
+            projectId: "asu-textbook-marketplace",
+            storageBucket: "asu-textbook-marketplace.firebasestorage.app",
+            messagingSenderId: "275260067181",
+            appId: "1:275260067181:web:2abd6a3f46f484bad69e64"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentListing = null;
+
+        // Auth state management
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email.endsWith('@asu.edu')) {
+                currentUser = user;
+                loadListing();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Load listing details
+        async function loadListing() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const listingId = urlParams.get('id');
+                
+                if (!listingId) {
+                    showError('Listing ID not found');
+                    return;
+                }
+
+                const listing = await getListing(listingId);
+                currentListing = listing;
+                
+                // Get seller information
+                const seller = await getUser(listing.ownerUid);
+                
+                displayListing(listing, seller);
+            } catch (error) {
+                console.error('Error loading listing:', error);
+                showError('Listing not found');
+            }
+        }
+
+        // Display listing details
+        function displayListing(listing, seller) {
+            document.getElementById('listing-details').innerHTML = `
+                <div class="listing-header">
+                    <h1>${listing.title}</h1>
+                    <p class="author">by ${listing.author || 'Unknown Author'}</p>
+                </div>
+                
+                <div class="listing-content">
+                    <div class="listing-image">
+                        <img src="${listing.imageUrl || 'https://via.placeholder.com/300x400?text=Book'}" alt="${listing.title}">
+                    </div>
+                    
+                    <div class="listing-info">
+                        <div class="price">$${listing.price.toFixed(2)}</div>
+                        
+                        <div class="course-tags">
+                            ${listing.courseCodes.map(code => `<span class="tag">${code}</span>`).join('')}
+                        </div>
+                        
+                        <div class="details">
+                            <p><strong>Edition:</strong> ${listing.edition || 'Not specified'}</p>
+                            <p><strong>ISBN:</strong> ${listing.isbn || 'Not provided'}</p>
+                            <p><strong>Status:</strong> ${listing.status}</p>
+                        </div>
+                        
+                        <div class="seller-info">
+                            <h3>Seller Information</h3>
+                            <p><strong>Name:</strong> ${seller.displayName}</p>
+                            <p><strong>Email:</strong> ${seller.asuEmail}</p>
+                            <p><strong>Rating:</strong> ${seller.reputation.rating}/5.0</p>
+                            <p><strong>Completed Trades:</strong> ${seller.reputation.completedTrades}</p>
+                        </div>
+                        
+                        <div class="actions">
+                            <button class="btn btn-primary" onclick="messageSeller()">
+                                📬 Message Seller
+                            </button>
+                            <button class="btn btn-secondary" onclick="proposeMeetup()">
+                                🤝 Propose Meetup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Message seller function
+        window.messageSeller = () => {
+            if (currentListing) {
+                localStorage.setItem('currentListing', currentListing.id);
+                localStorage.setItem('currentSeller', currentListing.ownerUid);
+                window.location.href = 'messages.html';
+            }
+        };
+
+        // Propose meetup function (placeholder)
+        window.proposeMeetup = () => {
+            alert('Meetup functionality coming soon!');
+        };
+
+        // Show error message
+        function showError(message) {
+            document.getElementById('listing-details').innerHTML = `
+                <div class="error-state">
+                    <h2>❌ ${message}</h2>
+                    <p>Please check the URL and try again.</p>
+                    <button onclick="window.location.href='feed.html'" class="btn btn-primary">
+                        Back to Feed
+                    </button>
+                </div>
+            `;
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .listing-header {
+            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .listing-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .listing-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .listing-image img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d5a27;
+            margin-bottom: 20px;
+        }
+
+        .course-tags {
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-right: 8px;
+            display: inline-block;
+        }
+
+        .details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .seller-info {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .listing-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="listing-details">
+            <div style="text-align: center; padding: 40px;">
+                <p>Loading listing details...</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

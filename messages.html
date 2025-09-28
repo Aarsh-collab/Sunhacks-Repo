@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - SunBooks</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+        import { sendMessage, fetchThread, getUserConversations } from './lib/messages.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDa8jBTAxpNw_01cYdke_IQqAS7dh83d6k",
+            authDomain: "asu-textbook-marketplace.firebaseapp.com",
+            projectId: "asu-textbook-marketplace",
+            storageBucket: "asu-textbook-marketplace.firebasestorage.app",
+            messagingSenderId: "275260067181",
+            appId: "1:275260067181:web:2abd6a3f46f484bad69e64"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentThread = null;
+
+        // Auth state management
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email.endsWith('@asu.edu')) {
+                currentUser = user;
+                loadConversations();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Load user's conversations
+        async function loadConversations() {
+            try {
+                const conversations = await getUserConversations(currentUser.uid);
+                displayConversations(conversations);
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                document.getElementById('conversations').innerHTML = '<p>Error loading conversations. Please try again.</p>';
+            }
+        }
+
+        // Display conversations list
+        function displayConversations(conversations) {
+            const container = document.getElementById('conversations');
+            if (conversations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📬 No conversations yet</h3>
+                        <p>Start a conversation by messaging a seller from a listing!</p>
+                        <button onclick="window.location.href='feed.html'" class="btn btn-primary">Browse Listings</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = conversations.map(conv => `
+                <div class="conversation-item" onclick="openThread('${conv.threadId}', '${conv.listingId}')">
+                    <div class="conversation-info">
+                        <h3>📚 Listing: ${conv.listingId}</h3>
+                        <p>${conv.lastMessage.text}</p>
+                        <small>${new Date(conv.lastMessage.createdAt).toLocaleString()}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Open conversation thread
+        window.openThread = async (threadId, listingId) => {
+            try {
+                currentThread = { threadId, listingId };
+                document.getElementById('conversations').style.display = 'none';
+                document.getElementById('thread-view').style.display = 'block';
+                
+                // Get the other participant (simplified for now)
+                const messages = await fetchThread({
+                    listingId,
+                    uidA: currentUser.uid,
+                    uidB: 'other_user' // You'll need to get the actual other participant
+                });
+                displayMessages(messages);
+            } catch (error) {
+                console.error('Error opening thread:', error);
+                alert('Error opening conversation. Please try again.');
+            }
+        };
+
+        // Display messages in thread
+        function displayMessages(messages) {
+            const container = document.getElementById('messages');
+            container.innerHTML = messages.map(msg => `
+                <div class="message ${msg.fromUid === currentUser.uid ? 'sent' : 'received'}">
+                    <div class="message-content">
+                        <p>${msg.text}</p>
+                        <small>${new Date(msg.createdAt).toLocaleString()}</small>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Send message
+        window.sendMessage = async () => {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            try {
+                await sendMessage({
+                    listingId: currentThread.listingId,
+                    fromUid: currentUser.uid,
+                    toUid: 'other_user', // You'll need to get the actual other participant
+                    text
+                });
+                input.value = '';
+                // Refresh messages
+                await openThread(currentThread.threadId, currentThread.listingId);
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Error sending message. Please try again.');
+            }
+        };
+
+        // Go back to conversations
+        window.goBack = () => {
+            document.getElementById('conversations').style.display = 'block';
+            document.getElementById('thread-view').style.display = 'none';
+        };
+
+        // Handle Enter key in message input
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('message-input');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .conversations {
+            padding: 20px;
+        }
+
+        .conversation-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .conversation-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .conversation-info h3 {
+            color: #2d5a27;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .conversation-info p {
+            color: #666;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .conversation-info small {
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        .thread-view {
+            display: none;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .thread-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 350px;
+        }
+
+        .message {
+            margin: 10px 0;
+            display: flex;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+        }
+
+        .message.received {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            background: #e9ecef;
+            padding: 12px 16px;
+            border-radius: 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .message.sent .message-content {
+            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+            color: white;
+        }
+
+        .message-content p {
+            margin: 0 0 5px 0;
+        }
+
+        .message-content small {
+            opacity: 0.7;
+            font-size: 0.8rem;
+        }
+
+        .message-input {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .message-input input:focus {
+            border-color: #2d5a27;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            color: #2d5a27;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(45, 90, 39, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📬 Messages</h1>
+            <p>Chat with buyers and sellers</p>
+        </div>
+        
+        <div id="conversations" class="conversations"></div>
+        
+        <div id="thread-view" class="thread-view" style="display: none;">
+            <div class="thread-header">
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <span>Conversation</span>
+            </div>
+            
+            <div id="messages" class="messages"></div>
+            
+            <div class="message-input">
+                <input type="text" id="message-input" placeholder="Type your message...">
+                <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

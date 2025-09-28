@@ -1,0 +1,225 @@
+TEAM CONTRACT (ONE PAGE) — SHARE THIS NOW
+
+DATA: FIELD NAMES (LOCK THESE)
+
+User — users/{uid}
+
+{
+  "uid": "u_123",
+  "displayName": "Aarsh Nandra",
+  "asuEmail": "anandra@asu.edu",
+  "reputation": { "completedTrades": 0, "rating": 5.0 },
+  "createdAt": 1727400000000
+}
+
+Listing — listings/{id}
+
+{
+  "id": "auto(doc id)",
+  "ownerUid": "u_123",
+  "title": "Calculus: ET",
+  "author": "Stewart",
+  "isbn": "9781285741550",
+  "edition": "8th",
+  "courseCodes": ["MAT265"],
+  "price": 35,
+  "imageUrl": "https://...",
+  "status": "active",                 // enum below
+  "searchKeys": ["CALCULUS","STEWART","MAT265","9781285741550"],
+  "createdAt": 1727400000000
+}
+
+Meetup — meetups/{id}
+
+{
+  "id": "auto(doc id)",
+  "listingId": "abc123",
+  "buyerUid": "u_buyer",
+  "sellerUid": "u_123",
+  "spot": "Hayden Library Lobby",     // enum below
+  "timeISO": "2025-09-27T18:00:00Z",
+  "status": "proposed",               // enum below
+  "createdAt": 1727400000000
+}
+
+Message — messages/{id}
+
+{
+  "id": "auto(doc id)",
+  "listingId": "listing123",
+  "threadId": "t_listing123_uidA_uidB",
+  "participants": ["uidA", "uidB"],              // sorted
+  "fromUid": "sender_uid",
+  "toUid": "recipient_uid", 
+  "text": "Hello, is this still available?",
+  "createdAt": 1727400000000
+}
+
+Enums (don't invent new values)
+    •    Listing.status: active | pending_meetup | meetup_set | sold | flagged
+    •    Meetup.status: proposed | accepted | completed | cancelled
+    •    Meetup.spot: Hayden Library Lobby | MU Starbucks | Student Services Lawn | Polytechnic Student Union Desk
+
+Normalization rules
+    •    createdAt: number (ms) from Date.now()
+    •    price: number
+    •    courseCodes: array of strings like ["MAT265","CSE110"]
+    •    searchKeys: UPPERCASE tokens only (title words, author, course codes, ISBN)
+
+⸻
+
+QUERIES & INDEXES (EVERYONE RELIES ON THIS)
+    •    Feed query: where status == "active" orderBy createdAt desc (limit 100)
+→ Composite Index required: status (ASC), createdAt (DESC)
+
+⸻
+
+AUTH EXPECTATION
+    •    Only @asu.edu users allowed past login.
+    •    On first login, create users/{uid} with asuEmail, displayName, createdAt, reputation.
+
+⸻
+
+IMAGE RULES
+    •    Upload path: listingImages/{ownerUid}/{uuid}.jpg
+    •    Max size: ≤ 5 MB
+    •    imageUrl stored on listing doc.
+    •    If no image, show placeholder.
+
+⸻
+
+COMMON SERVICE SHAPES (NAMES + PARAMS)
+
+Even if you all write your own files, stick to these function names/signatures so pages can call them the same way.
+
+Listings
+
+// returns latest active listings; client may further filter
+queryListings(filters?: { course?: string; min?: number; max?: number; text?: string }): Promise<Listing[]>
+
+getListing(id: string): Promise<Listing>
+
+createListing(input: {
+  ownerUid: string; title: string;
+  author?: string; isbn?: string; edition?: string;
+  courseCodes: string[]; price: number; imageUrl: string;
+  searchKeys: string[];               // UPPERCASE tokens
+}): Promise<string>                   // returns new listing id
+
+setListingStatus(id: string, status: ListingStatus): Promise<void>
+
+Meetups
+
+proposeMeetup(input: {
+  listingId: string; buyerUid: string; sellerUid: string;
+  spot: MeetupSpot; timeISO: string;
+}): Promise<string>
+
+acceptMeetup(id: string): Promise<void>
+
+completeMeetup(id: string): Promise<void>  // also set listing.status='sold' and increment seller.reputation.completedTrades
+
+Users
+
+getUser(uid: string): Promise<User>
+ensureUserDoc(): Promise<void>
+
+Messages
+
+sendMessage(input: {
+  listingId: string; fromUid: string; toUid: string; text: string;
+}): Promise<string>                    // returns new message id
+
+fetchThread(input: {
+  listingId: string; uidA: string; uidB: string;
+}): Promise<Message[]>                 // returns messages in chronological order
+
+getUserConversations(uid: string): Promise<Conversation[]>  // returns user's conversation summaries
+
+
+⸻
+
+PAGE CONTRACTS (WHAT EACH PAGE CAN EXPECT)
+
+Feed (feed.html / main screen)
+    •    Calls: queryListings({ course?, min?, max?, text? })
+    •    Shows: cards with imageUrl, title, courseCodes, price, seller name/email (from users)
+    •    Clicking card → listing.html?id=<listingId>
+
+Listing Detail (listing.html)
+    •    Reads query param id
+    •    Calls: getListing(id)
+    •    Buttons:
+    •    "Message Seller" → redirects to messages.html with listing context
+    •    "Propose meetup" → opens modal → calls proposeMeetup(...)
+
+New Listing (new.html)
+    •    Form fields: title*, author, isbn, edition, courseCodes (comma or chips), price*, image*
+    •    On submit:
+    1.    compress + upload image → get imageUrl
+    2.    build searchKeys (uppercase tokens)
+    3.    call createListing(...) → redirect to listing.html?id=<newId>
+
+Messages (messages.html)
+    •    Calls: getUserConversations(uid)
+    •    Shows: list of conversation threads with last message preview
+    •    Clicking thread → fetchThread({ listingId, uidA, uidB })
+    •    Send message → sendMessage({ listingId, fromUid, toUid, text })
+
+Meetups (meetups.html)
+    •    Two tabs: Buyer and Seller (filter by current user)
+    •    Buttons:
+    •    Seller: Accept → acceptMeetup(id) + set listing to meetup_set
+    •    Both: Mark Completed → completeMeetup(id) (sets listing sold, bumps seller completedTrades)
+
+⸻
+
+ERROR / EDGE BEHAVIOR
+    •    If listing not found → show “Listing not found” with link back to feed.
+    •    If user doc missing → call ensureUserDoc() quietly in background after login.
+    •    If email missing → disable “Contact Seller” button (opacity: .5; pointer-events: none).
+
+⸻
+
+MINIMAL UI CONSISTENCY
+    •    Price display: $${price.toFixed(2)}
+    •    Tag chips = each courseCodes[]
+    •    Empty state text: “No listings found”
+    •    Status text not shown on Feed; only hide non-active.
+
+⸻
+
+SAMPLE FIXTURES (PASTE INTO FIRESTORE TO TEST)
+
+users/u1
+
+{ "uid":"u1","displayName":"Alex Doe","asuEmail":"adoe@asu.edu","reputation":{"completedTrades":1,"rating":5},"createdAt":1727400000000 }
+
+listings/seed1
+
+{
+  "ownerUid":"u1","title":"Calculus: ET","author":"Stewart","isbn":"9781285741550",
+  "edition":"8th","courseCodes":["MAT265"],"price":35,
+  "imageUrl":"https://via.placeholder.com/300x400?text=Book",
+  "status":"active","searchKeys":["CALCULUS","STEWART","MAT265","9781285741550"],
+  "createdAt":1727400000000
+}
+
+meetups/m1 (optional for demo)
+
+{
+  "listingId":"seed1","buyerUid":"u2","sellerUid":"u1",
+  "spot":"Hayden Library Lobby","timeISO":"2025-09-27T18:00:00Z",
+  "status":"proposed","createdAt":1727400000000
+}
+
+
+⸻
+
+DEFINITION OF DONE (ALL DEVICES)
+    •    Feed loads ≥1 listing from Firestore with the composite index.
+    •    New Listing creates doc, shows on feed, image renders.
+    •    Listing Detail shows seller’s name/email; “Contact Seller” opens mail.
+    •    Propose → Accept → Complete flow updates listing status and seller counter.
+
+Pin this and keep coding. If anyone deviates from names/enums above, it’ll break someone else—so don’t.
